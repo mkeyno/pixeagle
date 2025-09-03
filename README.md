@@ -7,7 +7,7 @@ Flight controller  reference design based on the STM32F765VGT6 microcontroller, 
 # Hardware Selection
 
 
-## STM32F765VGT6:
+## STM32H743VIT6:
 Cortex-M7 core, 1 MB flash, and 512 KB SRAM
 ## IST8310 
 (Magnetometer): I2C-based, low power, 
