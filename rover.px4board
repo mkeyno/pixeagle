@@ -1,0 +1,312 @@
+# Toolchain for compiling the firmware.
+# Set to "arm-none-eabi" for compatibility with STM32H743VIT6 (Cortex-M7, 16 MHz HSE).
+CONFIG_BOARD_TOOLCHAIN="arm-none-eabi"
+
+# CPU architecture for the firmware.
+# Set to "cortex-m7" to match STM32H743VIT6's Cortex-M7 core.
+CONFIG_BOARD_ARCHITECTURE="cortex-m7"
+
+# Debug serial port (UART4, PC10/PC11, 5V levels) for console output.
+CONFIG_BOARD_SERIAL_GPS1="/dev/ttyS3"
+
+# Sensor module serial port (UART5, PC12/PD2, 5V levels) for extra sensor communication.
+CONFIG_BOARD_SERIAL_GPS2="/dev/ttyS2"
+
+# Companion computer serial port (UART7, PE7/PE8, 5V levels) for CM4 or ESP32 MAVLink.
+CONFIG_BOARD_SERIAL_TEL1="/dev/ttyS4"
+
+# RC input serial port (UART3, PD8/PD9, 5V levels) for SBUS/PPM (PPM on PB1/TIM3_CH4).
+CONFIG_BOARD_SERIAL_TEL2="/dev/ttyS1"
+
+# Telemetry serial port (USART2, PD5/PD6 TX/RX, PD3/PD4 CTS/RTS, 5V levels) with hardware flow control.  // UPDATED: Pins to PD3-PD6 (AF7 alternate)
+CONFIG_BOARD_SERIAL_TEL3="/dev/ttyS0"
+
+# Additional serial port (UART6, PC6/PC7, 5V levels) for new peripheral
+CONFIG_BOARD_SERIAL_TEL4="/dev/ttyS5"
+
+# Enable ADC driver for analog inputs (PC0, PC1 for sensors; PC2, PC3 for battery V/I).
+# Required for 5S LiPo monitoring and analog sensors with 11:1 voltage divider.
+CONFIG_DRIVERS_ADC_BOARD_ADC=y
+
+# Enable BMP388 barometer driver (connected to I2C3, pins PC9/PA8).
+# Useful for altitude estimation in rover applications.
+CONFIG_DRIVERS_BAROMETER_BMP388=y
+
+# Disable BMP390 barometer driver (was connected to I2C4, which is now disabled)
+CONFIG_DRIVERS_BAROMETER_BMP390=n
+
+# Disable MS5611 barometer (not used on Pixeagle).
+CONFIG_DRIVERS_BAROMETER_MS5611=n
+
+# Disable SMBus battery driver (Pixeagle uses analog battery monitoring on PC2/PC3).
+CONFIG_DRIVERS_BATT_SMBUS=n
+
+# Disable camera capture driver (no camera on Pixeagle).
+CONFIG_DRIVERS_CAMERA_CAPTURE=n
+
+# Disable camera trigger driver (no camera trigger on Pixeagle).
+CONFIG_DRIVERS_CAMERA_TRIGGER=n
+
+# Enable USB CDC-ACM driver for USB communication (PA11/PA12, VBUS sense on PA9).
+# Required for ground station or debugging via USB.
+CONFIG_DRIVERS_CDCACM_AUTOSTART=y
+
+# Disable differential pressure sensor (no airspeed sensor on Pixeagle).
+CONFIG_COMMON_DIFFERENTIAL_PRESSURE=n
+
+# Disable distance sensor (no rangefinder on Pixeagle).
+CONFIG_COMMON_DISTANCE_SENSOR=n
+
+# Enable DShot driver for motor control (8 PWM outputs on PD12-PD15, PC6-PC9).
+# Useful for rover motor control if DShot-compatible motors are used.
+CONFIG_DRIVERS_DSHOT=y
+
+# Disable Septentrio GPS driver (no Septentrio GPS on Pixeagle).
+CONFIG_DRIVERS_GNSS_SEPTENTRIO=n
+
+# Enable generic GPS driver for rover navigation (optional, on UART4 or UART8).
+CONFIG_DRIVERS_GPS=y
+
+# Enable heater driver for IMU temperature control (BMI088, ICM-42688-P).
+# Controlled via software, no specific pin assigned.
+CONFIG_DRIVERS_HEATER=y
+
+# Disable BMI055 IMU (not used on Pixeagle).
+CONFIG_DRIVERS_IMU_BOSCH_BMI055=n
+
+# Enable BMI088 IMU driver (connected to SPI1, pins PA4-PA7/PB2 CS_GYR, interrupts on PC4/PC5).  // UPDATED: GYR CS to PB2
+# Required for accelerometer and gyroscope data for rover navigation.
+CONFIG_DRIVERS_IMU_BOSCH_BMI088=y
+
+# Enable ICM-42688-P IMU driver (connected to SPI4, pins PE2-PE6, interrupt on PE3).
+# Provides secondary IMU data for redundancy or precision.
+CONFIG_DRIVERS_IMU_INVENSENSE_ICM42688P=y
+
+# Enable INS module for inertial navigation using BMI088 and ICM-42688-P.
+CONFIG_COMMON_INS=y
+
+# Disable light sensor (no light sensor on Pixeagle).
+CONFIG_COMMON_LIGHT=n
+
+# Enable magnetometer driver for IST8310 (connected to I2C3, pins PC9/PA8).
+# Useful for heading estimation in rover applications.
+CONFIG_COMMON_MAGNETOMETER=y
+
+# Disable optical flow sensor (no optical flow on Pixeagle).
+CONFIG_COMMON_OPTICAL_FLOW=n
+
+# Disable INA226 power monitor (Pixeagle uses analog battery monitoring).
+CONFIG_DRIVERS_POWER_MONITOR_INA226=n
+
+# Disable INA228 power monitor (not used).
+CONFIG_DRIVERS_POWER_MONITOR_INA228=n
+
+# Disable INA238 power monitor (not used).
+CONFIG_DRIVERS_POWER_MONITOR_INA238=n
+
+# Enable PWM output driver for 8 PWM outputs (PD12-PD15, PC6-PC9) and 6 AUX GPIOs (PA0-PA3, PB0, PE11).
+# Required for rover motor or actuator control.
+CONFIG_DRIVERS_PWM_OUT=y
+
+# Disable PX4IO co-processor driver (Pixeagle is FMU-only, no IO chip).
+CONFIG_DRIVERS_PX4IO=n
+
+# Enable telemetry module for MAVLink communication (UART7 for CM4, UART3 for RC).
+CONFIG_COMMON_TELEMETRY=y
+
+# Enable tone alarm driver for buzzer (mapped to PE13 for alarm).
+CONFIG_DRIVERS_TONE_ALARM=y
+
+# Enable CAN driver for dual CAN FD (CAN1: PD0/PD1, CAN2: PB12/PB13, 5V via TCAN1044VDRQ1).  // UPDATED: CAN1 to PD0/PD1 (AF9 alternate)
+CONFIG_DRIVERS_UAVCAN=y
+CONFIG_STM32_CAN1=y
+CONFIG_STM32_CAN2=y
+
+# Set UAVCAN timer override (kept as 2, relevant only if UAVCAN is enabled).
+CONFIG_BOARD_UAVCAN_TIMER_OVERRIDE=2
+
+# Disable airspeed selector (no airspeed sensor on Pixeagle).
+CONFIG_MODULES_AIRSPEED_SELECTOR=n
+
+# Enable battery status module for 5S LiPo monitoring (PC2 for voltage, PC3 for current).
+CONFIG_MODULES_BATTERY_STATUS=y
+
+# Disable camera feedback module (no camera on Pixeagle).
+CONFIG_MODULES_CAMERA_FEEDBACK=n
+
+# Enable commander module for vehicle control and state management.
+# Required for rover operation.
+CONFIG_MODULES_COMMANDER=y
+
+# Enable control allocator module for motor and actuator control.
+# Required for rover PWM outputs.
+CONFIG_MODULES_CONTROL_ALLOCATOR=y
+
+# Enable dataman module for parameter storage (FM25V01A-GTR on SPI2).
+CONFIG_MODULES_DATAMAN=y
+
+# Enable EKF2 module for state estimation (uses BMI088, ICM-42688-P, IST8310).
+CONFIG_MODULES_EKF2=y
+
+# Enable ESC battery monitoring module (complements battery status on PC2/PC3).
+CONFIG_MODULES_ESC_BATTERY=y
+
+# Enable events module for system event handling.
+CONFIG_MODULES_EVENTS=y
+
+# Disable flight mode manager (not needed for rovers).
+CONFIG_MODULES_FLIGHT_MODE_MANAGER=n
+
+# Disable fixed-wing attitude control (not needed for rovers).
+CONFIG_MODULES_FW_ATT_CONTROL=n
+
+# Disable fixed-wing autotune attitude control (not needed for rovers).
+CONFIG_MODULES_FW_AUTOTUNE_ATTITUDE_CONTROL=n
+
+# Disable fixed-wing mode manager (not needed for rovers).
+CONFIG_MODULES_FW_MODE_MANAGER=n
+
+# Disable fixed-wing lateral/longitudinal control (not needed for rovers).
+CONFIG_MODULES_FW_LATERAL_LONGITUNDINAL_CONTROL=n
+
+# Disable fixed-wing rate control (not needed for rovers).
+CONFIG_MODULES_FW_RATE_CONTROL=n
+
+# Disable multicopter attitude control (Pixeagle rover mode does not use quadcopter control).
+CONFIG_MODULES_MC_ATT_CONTROL=n
+
+# Disable multicopter autotune attitude control (not needed for rovers).
+CONFIG_MODULES_MC_AUTOTUTE_ATTITUDE_CONTROL=n
+
+# Disable multicopter hover thrust estimator (not needed for rovers).
+CONFIG_MODULES_MC_HOVER_THRUST_ESTIMATOR=n
+
+# Disable multicopter position control (not needed for rovers).
+CONFIG_MODULES_MC_POS_CONTROL=n
+
+# Disable multicopter rate control (not needed for rovers).
+CONFIG_MODULES_MC_RATE_CONTROL=n
+
+# Disable gimbal module (no gimbal on Pixeagle).
+CONFIG_MODULES_GIMBAL=n
+
+# Enable gyro calibration module for BMI088 and ICM-42688-P.
+CONFIG_MODULES_GYRO_CALIBRATION=y
+
+# Enable land detector module for rover state detection (e.g., stopped or moving).
+CONFIG_MODULES_LAND_DETECTOR=y
+
+# Disable landing target estimator (no landing target sensor on Pixeagle).
+CONFIG_MODULES_LANDING_TARGET_ESTIMATOR=n
+
+# Enable load monitoring module for system performance monitoring.
+CONFIG_MODULES_LOAD_MON=y
+
+# Enable logger module for data logging to MicroSD card (SPI2, PB11 CS).
+CONFIG_MODULES_LOGGER=y
+
+# Enable magnetometer bias estimator for IST8310 calibration.
+CONFIG_MODULES_MAG_BIAS_ESTIMATOR=y
+
+# Enable manual control module for RC input (UART3, PD8/PD9; PPM on PB1/TIM3_CH4).
+CONFIG_MODULES_MANUAL_CONTROL=y
+
+# Enable MAVLink module for CM4 communication (UART7, PE7/PE8).
+CONFIG_MODULES_MAVLINK=y
+
+# Enable rover Ackermann steering module for rover control.
+CONFIG_MODULES_ROVER_ACKERMANN=y
+
+# Enable rover differential steering module for rover control.
+CONFIG_MODULES_ROVER_DIFFERENTIAL=y
+
+# Enable rover mecanum steering module for advanced rover control.
+CONFIG_MODULES_ROVER_MECANUM=y
+
+# Enable navigator module for mission planning and navigation.
+CONFIG_MODULES_NAVIGATOR=y
+
+# Enable rover position control for navigation and path following.
+CONFIG_MODULES_ROVER_POS_CONTROL=y
+
+# Enable RC update module for RC input processing (UART3, PD8/PD9; PPM on PB1/TIM3_CH4).
+CONFIG_MODULES_RC_UPDATE=y
+
+# Enable sensors module for BMI088, ICM-42688-P, IST8310, BMP388.
+CONFIG_MODULES_SENSORS=y
+
+# Disable SIH simulator (not needed for real hardware).
+CONFIG_MODULES_SIMULATION_SIMULATOR_SIH=n
+
+# Enable temperature compensation for IMU sensors (BMI088, ICM-42688-P).
+CONFIG_MODULES_TEMPERATURE_COMPENSATION=y
+
+# Disable uXRCE-DDS client (not used on Pixeagle).
+CONFIG_MODULES_UXRCE-DDS_CLIENT=n
+
+# Disable VTOL attitude control (not needed for rovers).
+CONFIG_MODULES_VTOL_ATT_CONTROL=n
+
+# Enable actuator test command for testing PWM outputs (PD12-PD15, PC6-PC9).
+CONFIG_SYSTEMCMDS_ACTUATOR_TEST=y
+
+# Enable bson dump command for debugging.
+CONFIG_SYSTEMCMDS_BSONDUMP=y
+
+# Enable dmesg command for kernel message logging.
+CONFIG_SYSTEMCMDS_DMESG=y
+
+# Enable hardfault log command for crash debugging.
+CONFIG_SYSTEMCMDS_HARDFAULT_LOG=y
+
+# Enable i2cdetect command for debugging I2C1 (new peripheral), I2C2, I2C3 (IST8310, BMP388).
+CONFIG_SYSTEMCMDS_I2CDETECT=y
+
+# Enable LED control command for WS2812B LED (PE14) and safety light (PE15).
+CONFIG_SYSTEMCMDS_LED_CONTROL=y
+
+# Enable MFT command for parameter storage on FM25V01A-GTR (SPI2, PD10 CS).
+CONFIG_SYSTEMCMDS_MFT=y
+
+# Enable MTD command for managing FM25V01A-GTR (SPI2, PD10 CS).
+CONFIG_SYSTEMCMDS_MTD=y
+
+# Enable nshterm command for NuttX shell access.
+CONFIG_SYSTEMCMDS_NSHTERM=y
+
+# Enable param command for parameter management (FM25V01A-GTR).
+CONFIG_SYSTEMCMDS_PARAM=y
+
+# Enable perf command for performance monitoring.
+CONFIG_SYSTEMCMDS_PERF=y
+
+# Enable reboot command for system reboot.
+CONFIG_SYSTEMCMDS_REBOOT=y
+
+# Enable SD bench command for testing MicroSD performance (SPI2, PB11 CS).
+CONFIG_SYSTEMCMDS_SD_BENCH=y
+
+# Enable system time command for time management.
+CONFIG_SYSTEMCMDS_SYSTEM_TIME=y
+
+# Enable top command for task monitoring.
+CONFIG_SYSTEMCMDS_TOP=y
+
+# Enable topic listener command for uORB topic debugging.
+CONFIG_SYSTEMCMDS_TOPIC_LISTENER=y
+
+# Enable tune control command for buzzer (PE13).
+CONFIG_SYSTEMCMDS_TUNE_CONTROL=y
+
+# Enable uORB command for messaging framework.
+CONFIG_SYSTEMCMDS_UORB=y
+
+# Enable ver command for version information.
+CONFIG_SYSTEMCMDS_VER=y
+
+# Enable work queue command for task scheduling.
+CONFIG_SYSTEMCMDS_WORK_QUEUE=y
+
+# Disable Roboclaw driver (not specified in Pixeagle hardware).
+# Enable if a Roboclaw motor controller is used for rover motors.
+CONFIG_DRIVERS_ROBOCLAW=n

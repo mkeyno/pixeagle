@@ -1,0 +1,15 @@
+# Specifies the toolchain for compiling the bootloader.
+# "arm-none-eabi" is the standard GNU toolchain for ARM Cortex-M processors,
+# compatible with the STM32H743VIT6 (Cortex-M7, 16 MHz HSE) used on the Pixeagle board.
+CONFIG_BOARD_TOOLCHAIN="arm-none-eabi"
+
+# Defines the CPU architecture for the bootloader.
+# "cortex-m7" matches the STM32H743VIT6's Cortex-M7 core, ensuring correct
+# instruction set and optimizations for the Pixeagle board.
+CONFIG_BOARD_ARCHITECTURE="cortex-m7"
+
+# Sets the ROM File System (ROMFS) root directory for the bootloader.
+# An empty string ("") is used because the PX4 bootloader typically does not
+# require a ROMFS, as it only loads the main firmware from flash or external storage.
+# This is standard for PX4-based boards like Pixeagle.
+CONFIG_BOARD_ROMFSROOT=""
