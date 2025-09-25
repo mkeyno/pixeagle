@@ -1,0 +1,23 @@
+#!/bin/sh
+# Pixeagle sensor initialization (STM32H743VIT6, 16MHz HSE)
+# Sensors: IST8310 (I2C3, 0x0E), BMI088 (SPI1, PA4 CS_ACC, PB2 CS_GYR, PC4/PC5 interrupts),
+# ICM-42688-P (SPI4, PE4 CS, PE3 DRDY), BMP388 (I2C3, 0x76), BMP390 (I2C4, 0x76)
+# Input: PPM (PB1, TIM3_CH4), SBUS (PD9, UART3, auto-detect)
+# Sensor power: PA15 (GPIO_VDD_5V_PERIPH_EN, active high, enabled in init.c)
+# No PX4IO. MicroSD on SPI2 (PB11 CS).
+
+echo "Starting sensors for Pixeagle..."
+
+# Magnetometer (IST8310, I2C3)
+ist8310 start i2c 3 0x0E
+
+# Barometers (BMP388 on I2C3, BMP390 on I2C4)
+bmp388 start i2c 3 0x76
+bmp390 start i2c 4 0x76
+
+# IMU (BMI088 accel/gyro on SPI1, ICM-42688-P on SPI4)
+bmi088 start spi 1
+icm42688p start spi 4
+
+# RC input (PPM on PB1, SBUS on PD9)
+rcin start
