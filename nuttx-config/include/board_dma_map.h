@@ -1,0 +1,29 @@
+/*
+ * board_dma_map.h
+ * Defines DMA channels for peripherals (e.g., SPI2 for MicroSD/FRAM, UART3 for SBUS/PPM).
+ * DMA channel assignments for Pixeagle (STM32H743VIT6, 16MHz HSE).
+ * Supports:
+ * - SPI1 (BMI088: PA4/PB2 CS, PA5-7, PC4/PC5 interrupts)
+ * - SPI2 (MicroSD: PB11 CS, FM25V01A-GTR: PD10 CS, PB10/14/15)
+ * - SPI4 (ICM-42688-P: PE4 CS, PE2/5/6, PE3 DRDY)
+ * - UART3 (PD8/9, SBUS/PPM RXDMA)
+ * Sensor power: PA15 (GPIO_VDD_5V_PERIPH_EN, active high).
+ * WS2812B: PE14 (FastLED, no DMA).
+ */
+
+#ifndef __BOARDS_ARM_STM32H7_PIXEAGLE_INCLUDE_BOARD_DMA_MAP_H
+#define __BOARDS_ARM_STM32H7_PIXEAGLE_INCLUDE_BOARD_DMA_MAP_H
+
+#include <nuttx/config.h>
+#include <stm32_dma.h>
+
+/* DMA channels (STM32H743: DMA1/DMA2, 8 streams each) */
+#define DMAMAP_SPI1_RX  DMAMAP_DMA1_STREAM0  /* BMI088 RX */
+#define DMAMAP_SPI1_TX  DMAMAP_DMA1_STREAM1  /* BMI088 TX */
+#define DMAMAP_SPI2_RX  DMAMAP_DMA1_STREAM3  /* MicroSD/FRAM RX */
+#define DMAMAP_SPI2_TX  DMAMAP_DMA1_STREAM4  /* MicroSD/FRAM TX */
+#define DMAMAP_SPI4_RX  DMAMAP_DMA1_STREAM5  /* ICM-42688-P RX */
+#define DMAMAP_SPI4_TX  DMAMAP_DMA1_STREAM6  /* ICM-42688-P TX */
+#define DMAMAP_UART3_RX DMAMAP_DMA1_STREAM2  /* SBUS/PPM RXDMA */
+
+#endif /* __BOARDS_ARM_STM32H7_PIXEAGLE_INCLUDE_BOARD_DMA_MAP_H */
