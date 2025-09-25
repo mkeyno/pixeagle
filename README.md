@@ -2,7 +2,7 @@
 ![Screenshot 2025-08-02 143302](https://github.com/user-attachments/assets/5958b0be-9736-45da-82f3-39a60d72d2f4)
 
 
-Flight controller  reference design based on the STM32F765VGT6 microcontroller, similar to  FMUv5
+### Flight controller  reference design based on the STM32H743VIT6 microcontroller, and PX4 clone of  PX4-Autopilot\boards\px4\fmu-v6c
 
 # Hardware Selection
 
