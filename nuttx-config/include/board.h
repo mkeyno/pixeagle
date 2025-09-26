@@ -10,8 +10,8 @@
  * Note: BMP388 and BMP390 share I2C address 0x77 but are on separate buses (I2C3, I2C4).
  */
 
-#ifndef __NUTTX_CONFIG_PX4_PIXEAGLE_INCLUDE_BOARD_H
-#define __NUTTX_CONFIG_PX4_PIXEAGLE_INCLUDE_BOARD_H
+#ifndef __BOARDS_ARM_PIXEAGLE_INCLUDE_BOARD_H
+#define __BOARDS_ARM_PIXEAGLE_INCLUDE_BOARD_H
 
 /************************************************************************************
  * Included Files
