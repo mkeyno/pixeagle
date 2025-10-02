@@ -25,59 +25,49 @@
  * No PX4IO co-processor. I2C1 and SPI3 use TXS0108ERGYR for 5V level translation.
  */
 
+
 #include <nuttx/spi/spi.h>
 #include <px4_platform_common/px4_manifest.h>
+#include <px4_platform_common/defines.h>  // For SPIDEV_FLASH
 
-// FM25V01A-GTR on SPI2: 128 KB, emulated as 4096 blocks of 32 bytes  // FIXED: 128 KB capacity
-static const px4_mft_device_t 			spi2_fram = {
+// FM25V01A-GTR on SPI2: 128 KB, emulated as 4096 blocks of 32 bytes
+static const px4_mft_device_t spi2_fram = {
     .bus_type = px4_mft_device_t::SPI,
     .devid    = SPIDEV_FLASH(0)
 };
 
-// MicroSD on SPI2 (not MTD, included for manifest completeness)
-static const px4_mft_device_t 			spi2_microsd = {
-    .bus_type = px4_mft_device_t::SPI,
-    .devid    = SPIDEV_MMCSD(0)
-};
-
-// FM25V01A-GTR for parameter storage (128 KB = 131072 bytes)
-static const px4_mtd_entry_t 			fmum_fram = {
+static const px4_mtd_entry_t fmum_fram = {
     .device = &spi2_fram,
     .npart = 1,
     .partd = {
         {
             .type = MTD_PARAMETERS,
             .path = "/fs/mtd_params",
-            .nblocks = (131072 / (1 << CONFIG_RAMTRON_EMULATE_SECTOR_SHIFT))  // FIXED: 128 KB capacity
+            .nblocks = (131072 / (1 << CONFIG_RAMTRON_EMULATE_SECTOR_SHIFT))  // 128 KB
         }
     },
 };
 
-static const px4_mtd_manifest_t 		board_mtd_config = {
+static const px4_mtd_manifest_t board_mtd_config = {
     .nconfigs = 1,
     .entries = {
         &fmum_fram
     }
 };
 
-static const px4_mft_entry_s 			mtd_mft = {
+static const px4_mft_entry_s mtd_mft = {
     .type = MTD,
     .pmft = (void *)&board_mtd_config,
 };
 
-// Board manifest including all devices
-static const px4_mft_s 					mft = {
-    .nmft = 2,
+static const px4_mft_s mft = {
+    .nmft = 1,
     .mfts = {
-        &mtd_mft,
-        {
-            .type = MFT_DEVICE_TYPE_STORAGE,  // Use standard storage type instead of custom HW_MFT_MICROSD
-            .pmft = (void *)&spi2_microsd
-        }
+        &mtd_mft
     }
 };
 
-const px4_mft_s 						*board_get_manifest(void)
+const px4_mft_s *board_get_manifest(void)
 {
     return &mft;
 }
