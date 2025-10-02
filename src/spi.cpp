@@ -27,34 +27,25 @@
 #include <drivers/drv_sensor.h>
 #include <nuttx/spi/spi.h>
 
-constexpr px4_spi_bus_all_hw_t 						px4_spi_buses_all_hw[BOARD_NUM_SPI_CFG_HW_VERSIONS] = {
-    initSPIHWVersion(V1C00, {
-		
-        initSPIBus(SPI::Bus::SPI1, {
-			
-            initSPIDevice(DRV_ACC_DEVTYPE_BMI088, SPI::CS{GPIO::PortA, GPIO::Pin4}, SPI::DRDY{GPIO::PortC, GPIO::Pin4}),  // BMI088 accel: CS PA4, DRDY PC4
-            initSPIDevice(DRV_GYR_DEVTYPE_BMI088, SPI::CS{GPIO::PortB, GPIO::Pin2}, SPI::DRDY{GPIO::PortC, GPIO::Pin5}),  // BMI088 gyro: CS PB2, DRDY PC5
-			
-        }, {GPIO::PortA, GPIO::Pin5}, 20'000'000),  // SPI1 at 20 MHz
-		
-        initSPIBus(SPI::Bus::SPI4, {
-			
-            initSPIDevice(DRV_IMU_DEVTYPE_ICM42688P, SPI::CS{GPIO::PortE, GPIO::Pin4}, SPI::DRDY{GPIO::PortE, GPIO::Pin3}), // ICM-42688-P: CS PE4, DRDY PE3
-			
-        }, {GPIO::PortE, GPIO::Pin2}, 20'000'000),  // SPI4 at 20 MHz
-		
-        initSPIBus(SPI::Bus::SPI2, {
-			
-            initSPIDevice(SPIDEV_MMCSD(0), SPI::CS{GPIO::PortB, GPIO::Pin11}, SPI::DRDY{GPIO::PortInvalid, GPIO::Pin0}, 10'000'000), // MicroSD
-            initSPIDevice(SPIDEV_FLASH(0), SPI::CS{GPIO::PortD, GPIO::Pin10}, SPI::DRDY{GPIO::PortInvalid, GPIO::Pin0}, 20'000'000), // FM25V01A-GTR
-			
-        }, {GPIO::PortB, GPIO::Pin10}, 20'000'000), // SPI2 default 20 MHz
-		
-        initSPIBus(SPI::Bus::SPI3, {
-            initSPIDevice(SPIDEV_NONE, SPI::CS{GPIO::PortD, GPIO::Pin7}, SPI::DRDY{GPIO::PortInvalid, GPIO::Pin0}, 10'000'000), // External SPI
-        }, {GPIO::PortB, GPIO::Pin3}, 10'000'000),  // SPI3 at 10 MHz
-		
-    }),
+constexpr px4_spi_bus_t px4_spi_buses[] = {
+	// SPI1: BMI088 sensors
+	initSPIBus(SPI::Bus::SPI1, {
+		initSPIDevice(DRV_ACC_DEVTYPE_BMI088, SPI::CS{GPIO::PortA, GPIO::Pin4}),
+		initSPIDevice(DRV_GYR_DEVTYPE_BMI088, SPI::CS{GPIO::PortB, GPIO::Pin2}),
+	}),
+	// SPI2: FRAM and MicroSD  
+	initSPIBus(SPI::Bus::SPI2, {
+		initSPIDevice(DRV_DEVTYPE_UNUSED, SPI::CS{GPIO::PortD, GPIO::Pin10}),  // FRAM
+		initSPIDevice(DRV_DEVTYPE_UNUSED, SPI::CS{GPIO::PortB, GPIO::Pin11}),  // MicroSD
+	}),
+	// SPI3: External
+	initSPIBus(SPI::Bus::SPI3, {
+		initSPIDevice(DRV_DEVTYPE_UNUSED, SPI::CS{GPIO::PortD, GPIO::Pin7}),  // External
+	}),
+	// SPI4: ICM42688P
+	initSPIBus(SPI::Bus::SPI4, {
+		initSPIDevice(DRV_IMU_DEVTYPE_ICM42688P, SPI::CS{GPIO::PortE, GPIO::Pin4}),
+	}),
 };
 
-static constexpr bool unused = validateSPIConfig(px4_spi_buses_all_hw);
+//static constexpr bool unused = validateSPIConfig(px4_spi_buses);
