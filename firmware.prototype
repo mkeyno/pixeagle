@@ -1,44 +1,13 @@
 {
-    // Unique identifier for the Pixeagle board, distinct from other PX4 boards.
-    // Changed from 99 (placeholder) to 100 to avoid conflicts with existing PX4 board IDs.
     "board_id": 100,
-
-    // Magic string identifying this as a PX4 firmware image.
-    // Kept as "PX4FWv1" to maintain compatibility with PX4 firmware structure.
     "magic": "PX4FWv1",
-
-    // Detailed description of the board for clarity in documentation and tools.
-    // Updated to reflect the board's purpose and hardware (STM32H743VIT6, 16 MHz HSE, rover/quad capable).
-    "description": "Firmware for the Pixeagle flight controller based on STM32H743VIT6 (16 MHz HSE), designed for quadcopters/rovers with CM4 MAVLink integration",
-
-    // Path to the firmware image (not specified yet, kept empty).
-    // Update this when the binary image is generated.
+    "description": "Firmware for the PixEagle board",
     "image": "",
-
-    // Timestamp of the build (0 for prototype, updated during build process).
     "build_time": 0,
-
-    // Short name for the board, used in PX4 tools and interfaces.
-    // Updated to "Pixeagle" for consistency with your board name.
-    "summary": "Pixeagle",
-
-    // Firmware version for this board.
-    // Kept as "0.1" for initial development; increment as needed.
+    "summary": "PixEagle",
     "version": "0.1",
-
-    // Size of the compiled firmware image in bytes (0 for prototype).
-    // Will be updated automatically during the build process.
     "image_size": 0,
-
-    // Maximum allowable firmware size in bytes, matching STM32H743VIT6's 2MB flash.
-    // Set to 2097152 (2MB) to reflect the MCU's flash capacity.
-    "image_maxsize": 2097152,
-
-    // Git hash or identifier for the firmware source (empty for prototype).
-    // Will be populated during the build process if using Git.
+    "image_maxsize": 1966080,
     "git_identity": "",
-
-    // Hardware revision of the board.
-    // Kept as 0 for initial prototype; update if multiple revisions exist.
     "board_revision": 0
 }
