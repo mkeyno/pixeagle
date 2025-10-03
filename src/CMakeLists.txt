@@ -18,6 +18,9 @@ if("${PX4_BOARD_LABEL}" STREQUAL "bootloader")
     )
 else()
     add_library(drivers_board
+        sched_stubs.c          # Add this
+        boardctl_stub.c        # Add this  
+        board_dma_alloc.c
         i2c.cpp
         init.c
         led.cpp
@@ -28,10 +31,7 @@ else()
         timer_config.cpp
         usb.c
     )
-    add_dependencies(drivers_board
-        arch_board_hw_info
-    )
-
+    
     target_link_libraries(drivers_board
         PRIVATE
             arch_spi
@@ -47,4 +47,10 @@ else()
     if(TARGET arch_spi)
         target_compile_options(arch_spi PRIVATE -Wno-unused-function)
     endif()
+    
+    # Allow PX4's cpuload to override NuttX's sched_note functions
+    target_link_options(drivers_board INTERFACE -Wl,--allow-multiple-definition)
 endif()
+
+# target_compile_options(drivers_board PRIVATE -v)
+# target_link_options(drivers_board PRIVATE -Wl,--verbose)
