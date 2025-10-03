@@ -1,30 +1,35 @@
-/**
- * @file mtd.cpp
+/****************************************************************************
  *
- * Pixeagle MTD (Memory Technology Device) configuration
+ *   Copyright (C) 2020 PX4 Development Team. All rights reserved.
  *
- * Configures non-volatile storage for the Pixeagle board (STM32H743VIT6, version V1C00):
- * - FM25V01A-GTR (SPI2, PD10 CS, 128 KB, 4096 blocks of 32 bytes, /fs/mtd_params)  // FIXED: 128 KB capacity
- * - MicroSD (SPI2, PB11 CS, for logging, not MTD but included in manifest)
- * Hardware:
- * - BMI088 (SPI1, PA4 CS_ACC, PB2 CS_GYR, PA5–PA7, 20 MHz)  // UPDATED: GYR CS to PB2 per pin table
- * - ICM-42688-P (SPI4, PE4 CS, PE2/PE5/PE6, PE3 DRDY, 20 MHz)  // FIXED: CS on PE4, DRDY on PE3
- * - IST8310 (I2C3, PA8 SCL/PC9 SDA, 0x0E, 400 kHz), BMP388 (I2C3, 0x76), BMP390 (I2C4, PB8 SCL/PB9 SDA, 0x76)
- * - MicroSD (SPI2, PB11 CS, PB10 SCK, PB14 MISO, PB15 MOSI, 10 MHz)
- * - FM25V01A-GTR (SPI2, PD10 CS, 20 MHz)
- * - External SPI (SPI3, PB3 SCK, PB4 MISO, PB5 MOSI, PD7 CS, 10 MHz, 5V via TXS0108ERGYR)  // FIXED: CS on PD7
- * - External I2C (I2C1, PB6 SCL, PB7 SDA, 400 kHz, 5V via TXS0108ERGYR)
- * - Dual WS2812B LEDs (PE14, TIM1)
- * - UART4 (PC10/PC11, debug, 5V, /dev/ttyS3, 115200 baud)
- * - UART5 (PC12/PD2, sensor module, 5V, /dev/ttyS2, 115200 baud)
- * - USART2 (PD5 TX/PD6 RX, PD3 CTS/PD4 RTS, telemetry, 5V, /dev/ttyS0, 57600 baud)  // UPDATED: Pins to PD3-PD6 per pin table
- * - UART7 (PE7/PE8, CM4/ESP32, 5V, /dev/ttyS4, 921600 baud)
- * - UART3 (PD8/PD9, SBUS/PPM, auto-detect, RC_SBUS_INV device-dependent: 0 normal, 1 inverted)
- * - CAN1 (PD0/PD1, 5V via TCAN1044VDRQ1), CAN2 (PB12/PB13, 5V via TCAN1044VDRQ1)  // UPDATED: CAN1 to PD0/PD1 per pin table
- * - USB OTG FS (PA9 VBUS, PA11 DM, PA12 DP, no power/overcurrent pins)
- * No PX4IO co-processor. I2C1 and SPI3 use TXS0108ERGYR for 5V level translation.
- */
-
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
 
 #include <nuttx/spi/spi.h>
 #include <px4_platform_common/px4_manifest.h>

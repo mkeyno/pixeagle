@@ -6,6 +6,7 @@
  */
 
 #include "board_config.h"
+#include <chip.h>  // Add this line
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -78,19 +79,24 @@ __EXPORT void board_peripheral_reset(int ms)
  * Description: Called on entry to board_system_reset for housekeeping.
  *
  ************************************************************************************/
+
 __EXPORT void board_on_reset(int status)
 {
-    /* Configure PWM pins as GPIO outputs during reset */
-    for (int i = 0; i < DIRECT_PWM_OUTPUT_CHANNELS; ++i) {
-        px4_arch_configgpio(io_timer_channel_get_gpio_output(i));
-    }
+    /* Configure all PWM pins as GPIOs and set them low */
+    stm32_configgpio(GPIO_TIM1_CH3OUT);  // PWM OUT 8
+    stm32_configgpio(GPIO_TIM3_CH1OUT);  // PWM OUT 5
+    stm32_configgpio(GPIO_TIM4_CH1OUT);  // PWM OUT 1
+    stm32_configgpio(GPIO_TIM4_CH2OUT);  // PWM OUT 2
+    stm32_configgpio(GPIO_TIM4_CH3OUT);  // PWM OUT 3
+    stm32_configgpio(GPIO_TIM4_CH4OUT);  // PWM OUT 4
+    stm32_configgpio(GPIO_TIM8_CH2OUT);  // PWM OUT 6
+    stm32_configgpio(GPIO_TIM8_CH3OUT);  // PWM OUT 7
 
-    /* On non-boot resets, set PWM pins low to disarm ESCs */
+    /* On non-boot resets, delay for ESC disarm */
     if (status >= 0) {
         up_mdelay(100);
     }
 }
-
 /************************************************************************************
  * Name: stm32_boardinitialize
  *
@@ -175,3 +181,21 @@ __EXPORT int board_app_initialize(uintptr_t arg)
 #endif
     return OK;
 }
+
+
+
+
+
+
+/************************************************************************************
+ * Name: stm32_spibus_initialize
+ *
+ * Description: Initialize SPI buses - minimal stub
+ *
+ ************************************************************************************/
+__EXPORT FAR struct spi_dev_s *stm32_spibus_initialize(int bus)
+{
+    return NULL;
+}
+
+

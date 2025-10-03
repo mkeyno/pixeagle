@@ -1,31 +1,45 @@
+/****************************************************************************
+ *
+ *   Copyright (c) 2018-2021 PX4 Development Team. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in
+ *    the documentation and/or other materials provided with the
+ *    distribution.
+ * 3. Neither the name PX4 nor the names of its contributors may be
+ *    used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+ * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS
+ * OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ *
+ ****************************************************************************/
+
 /**
  * @file manifest.c
  *
- * Pixeagle hardware manifest
+ * This module supplies the interface to the manifest of hardware that is
+ * optional and dependent on the HW REV and HW VER IDs
  *
- * Defines the hardware manifest for the Pixeagle board (STM32H743VIT6, version V1C00):
- 
- 
- * - BMI088 (SPI1, PA4 CS_ACC, PB2 CS_GYR, PA5–PA7, 20 MHz)  // UPDATED: GYR CS to PB2
- * - ICM-42688-P (SPI4, PE4 CS, PE2/PE5/PE6, PE3 DRDY, 20 MHz)  // FIXED: CS on PE4, DRDY on PE3
- * - IST8310 (I2C3, PA8 SCL/PC9 SDA, 0x0E, 400 kHz)
- * - BMP388 (I2C3, PA8 SCL/PC9 SDA, 0x76, 400 kHz)
- * - BMP390 (I2C4, PB8 SCL/PB9 SDA, 0x76, 400 kHz)
- * - MicroSD (SPI2, PB11 CS, PB10 SCK, PB14 MISO, PB15 MOSI, 10 MHz)
- * - FM25V01A-GTR (SPI2, PD10 CS, 20 MHz)
- * - External SPI (SPI3, PB3 SCK, PB4 MISO, PB5 MOSI, PD7 CS, 10 MHz, 5V via TXS0108ERGYR)  // FIXED: CS on PD7
- * - External I2C (I2C1, PB6 SCL, PB7 SDA, 400 kHz, 5V via TXS0108ERGYR)
- * - Dual WS2812B LEDs (PE14, TIM1)
- * - UART4 (PC10/PC11, debug, 5V, /dev/ttyS3, 115200 baud)
- * - UART5 (PC12/PD2, sensor module, 5V, /dev/ttyS2, 115200 baud)
- * - USART2 (PD5 TX/PD6 RX, PD3 CTS/PD4 RTS, telemetry, 5V, /dev/ttyS0, 57600 baud)  // UPDATED: Pins to PD3-PD6
- * - UART7 (PE7/PE8, CM4/ESP32, 5V, /dev/ttyS4, 921600 baud)
- * - UART3 (PD8/PD9, SBUS/PPM, auto-detect, RC_SBUS_INV device-dependent: 0 normal, 1 inverted)
- * - CAN1 (PD0/PD1, 5V via TCAN1044VDRQ1)  // UPDATED: Pins to PD0/PD1
- * - CAN2 (PB12/PB13, 5V via TCAN1044VDRQ1)
- * - USB OTG FS (PA9 VBUS, PA11 DM, PA12 DP, no power/overcurrent pins)
- * No PX4IO co-processor. I2C1 and SPI3 use TXS0108ERGYR for 5V level translation.
- * All components are onboard, present, and mandatory.
+ * The manifest allows the system to know whether a hardware option
+ * say for example the PX4IO is an no-pop option vs it is broken.
+ *
  */
 
 #include <nuttx/config.h>
@@ -42,74 +56,56 @@
  ****************************************************************************/
 
 typedef struct {
-    uint32_t                hw_ver_rev; /* Version and revision ID */
-    const px4_hw_mft_item_t *mft;       /* Pointer to manifest items */
-    uint32_t                entries;    /* Number of manifest items */
-} 
-px4_hw_mft_list_entry_t;
+    uint32_t                hw_ver_rev; /* the version and revision */
+    const px4_hw_mft_item_t *mft;       /* The first entry */
+    uint32_t                entries;    /* the length of the list */
+} px4_hw_mft_list_entry_t;
 
 typedef px4_hw_mft_list_entry_t *px4_hw_mft_list_entry;
 #define px4_hw_mft_list_uninitialized (px4_hw_mft_list_entry) -1
 
-/* Define component IDs for Pixeagle */
-typedef enum {
-    HW_MFT_BMI088,         /* BMI088 IMU on SPI1 */
-    HW_MFT_ICM42688P,      /* ICM-42688-P IMU on SPI4 */
-    HW_MFT_IST8310,        /* IST8310 magnetometer on I2C3 */
-    HW_MFT_BMP388,         /* BMP388 barometer on I2C3 */
-    HW_MFT_BMP390,         /* BMP390 barometer on I2C4 */
-    HW_MFT_FM25V01A,       /* FM25V01A-GTR FRAM on SPI2 */
-    HW_MFT_MICROSD,        /* MicroSD on SPI2 */
-    HW_MFT_WS2812B,        /* Dual WS2812B LEDs on PE14 (TIM1) */
-    HW_MFT_CAN1,           /* CAN1 on PD0/PD1 (TCAN1044VDRQ1) */  // UPDATED: Pins
-    HW_MFT_CAN2,           /* CAN2 on PB12/PB13 (TCAN1044VDRQ1) */
-    HW_MFT_COUNT           /* Total number of components */
-} 
-px4_hw_mft_item_id_t;
+static const px4_hw_mft_item_t device_unsupported = {0, 0, 0};
 
-/* Define Pixeagle hardware version/revision */
-#define V1C00 0x10000  /* Version 1, Revision 0 */
+// Unique Pixeagle HW version (avoid conflict with V6C00)
+#define PIXEAGLE_V1C00 HW_VER_REV(1, 0)
 
-/* Pixeagle hardware manifest (all components onboard and mandatory) */
-static const px4_hw_mft_item_t 				hw_mft_list_v1c00[] = {
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* BMI088 */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* ICM-42688-P */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* IST8310 */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* BMP388 */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* BMP390 */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* FM25V01A-GTR */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* MicroSD */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* WS2812B LEDs */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* CAN1 */
-    { .present = 1, .mandatory = 1, .connection = px4_hw_con_onboard }, /* CAN2 */
+// List of components on Pixeagle (using standard px4_hw_mft_item_id_t indices: 0=PX4IO, 1=other; adapt as onboard)
+static const px4_hw_mft_item_t hw_mft_list_v1c00[] = {
+    {
+        .present     = 0,  // No PX4IO
+        .mandatory   = 0,
+        .connection  = px4_hw_con_unknown,
+    },
+    {
+        .present     = 1,  // Sensors/CAN/LEDs onboard
+        .mandatory   = 1,
+        .connection  = px4_hw_con_onboard,
+    },
 };
 
-static px4_hw_mft_list_entry_t 				mft_lists[] = {
-    { V1C00, hw_mft_list_v1c00, arraySize(hw_mft_list_v1c00) }, /* Pixeagle Rev 0 */
+static px4_hw_mft_list_entry_t mft_lists[] = {
+    {PIXEAGLE_V1C00, hw_mft_list_v1c00, arraySize(hw_mft_list_v1c00)},  // Pixeagle V1 Rev 0
 };
-
-/* Default to unsupported device if no manifest matches */
-static const px4_hw_mft_item_t 				device_unsupported = { 0, 0, 0 };
 
 /************************************************************************************
  * Name: board_query_manifest
  *
  * Description:
- *   Returns the manifest item for a given component ID.
+ *   Optional returns manifest item.
  *
  * Input Parameters:
- *   id - The component ID (px4_hw_mft_item_id_t) to retrieve.
+ *   manifest_id - the ID for the manifest item to retrieve
  *
  * Returned Value:
- *   Pointer to the manifest item, or device_unsupported if not found.
+ *   0 - item is not in manifest => assume legacy operations
+ *   pointer to a manifest item
  *
  ************************************************************************************/
 
-__EXPORT px4_hw_mft_item 			board_query_manifest(px4_hw_mft_item_id_t id)
+__EXPORT px4_hw_mft_item board_query_manifest(px4_hw_mft_item_id_t id)
 {
-    static px4_hw_mft_list_entry 			boards_manifest = px4_hw_mft_list_uninitialized;
+    static px4_hw_mft_list_entry boards_manifest = px4_hw_mft_list_uninitialized;
 
-    /* Initialize manifest on first call */
     if (boards_manifest == px4_hw_mft_list_uninitialized) {
         uint32_t ver_rev = board_get_hw_version() << 16;
         ver_rev |= board_get_hw_revision();
@@ -122,14 +118,14 @@ __EXPORT px4_hw_mft_item 			board_query_manifest(px4_hw_mft_item_id_t id)
         }
 
         if (boards_manifest == px4_hw_mft_list_uninitialized) {
-            syslog(LOG_ERR, "[boot] Pixeagle board %08" PRIx32 " is not supported!\n", ver_rev);
+            syslog(LOG_ERR, "[boot] Board %08" PRIx32 " is not supported!\n", ver_rev);
         }
     }
 
-    /* Return manifest item or unsupported */
     px4_hw_mft_item rv = &device_unsupported;
 
-    if (boards_manifest != px4_hw_mft_list_uninitialized && id < boards_manifest->entries) {
+    if (boards_manifest != px4_hw_mft_list_uninitialized &&
+        id < boards_manifest->entries) {
         rv = &boards_manifest->mft[id];
     }
 

@@ -33,10 +33,14 @@
 void board_late_initialize(void)
 {
     /* Enable sensor power rail (PA15, active low) */
-    px4_arch_gpiowrite(GPIO_VDD_5V_PERIPH_nEN, 1); // Enable (active high)
+    px4_arch_gpiowrite(GPIO_VDD_5V_PERIPH_EN, 1); // Enable (active high)
 
     /* Initialize serial console on UART4 (PC10/PC11, /dev/ttyS3, 5V) for bootloader debug */
     sercon_main(0, NULL);
+	
+	modifyreg32(STM32_RCC_CR, 0, RCC_CR_HSEON);  // Enable HSE
+    while (!(getreg32(STM32_RCC_CR) & RCC_CR_HSERDY));  // Wait ready
+    // Then reconfigure PLL via stm32_clockconfig() if needed
 }
 
 /**
