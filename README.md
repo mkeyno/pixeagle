@@ -30,6 +30,10 @@ Standard for PX4 data logging, connected via SPI4, which is appropriate.
 
 <img width="458" height="1601" alt="image" src="https://github.com/user-attachments/assets/0c4f43f0-293c-434a-8e6e-daa5bc631675" />
 
+
+<img width="1621" height="625" alt="image" src="https://github.com/user-attachments/assets/e1436987-e5f9-4632-915b-7d24ad0e51b0" />
+
+
 # Sensor peripheral allocation 	
 
 <img width="190" height="201" alt="image" src="https://github.com/user-attachments/assets/d732798a-1cc7-4755-992b-0509bb32f1ea" />
