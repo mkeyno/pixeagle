@@ -2,15 +2,8 @@
  * @file bootloader_main.c
  *
  * Pixeagle-specific early startup code for bootloader
- *
- * This file configures early hardware initialization for the Pixeagle board,
- * based on STM32H743VIT6, with BMI088 (SPI1), ICM-42688-P (SPI4), IST8310 (I2C3, 0x0E),
- * BMP388 (I2C3, 0x76), BMP390 (I2C4, 0x76), FM25V01A-GTR (SPI2), MicroSD (SPI2),
- * dual WS2812B LEDs on PE14, UART4 (PC10/PC11, debug, 5V), UART5 (PC12/PD2, sensor module, 5V),
- * USART2 (PD5 TX/PD6 RX, PD3 CTS/PD4 RTS, telemetry with flow control, 5V), UART7 (PE7/PE8, CM4/ESP32, 5V).  // UPDATED: USART2 pins
- * Initializes sensor power rail (PA15, active low) and serial console (UART4, /dev/ttyS3).
  */
-
+#include <nuttx/serial/serial.h>
 #include "board_config.h"
 #include "bl.h"
 
@@ -21,37 +14,54 @@
 #include <arch/board/board.h>
 #include <px4_platform_common/init.h>
 
+
+// Add this function to fix the linker error
+#include <stdbool.h>
+
+/**
+ * @brief Check if flash cache is dirty
+ * Required by flash_cache.c but may not be compiled in some configurations
+ */
+bool fc_is_dirty(void)
+{
+    // Simple implementation for bootloader
+    // In full implementation, this would check if cache needs flushing
+    return false;
+}
+
+
 /**
  * @brief Late initialization for the board
- *
- * This function is called after basic hardware setup to initialize the serial
- * console and power up peripherals. For Pixeagle, it enables the sensor power
- * rail (PA15, active high) to power sensors (BMI088, ICM-42688-P, IST8310, BMP388,
- * BMP390). The serial console is set up on UART4 (PC10/PC11, /dev/ttyS3, 5V) for
- * debug output. Other UARTs (UART5, USART2, UART7) are configured in the main firmware.
  */
 void board_late_initialize(void)
 {
-    /* Enable sensor power rail (PA15, active low) */
-    px4_arch_gpiowrite(GPIO_VDD_5V_PERIPH_EN, 1); // Enable (active high)
+    /* Enable sensor power rail (PA15, active high) */
+    px4_arch_gpiowrite(GPIO_VDD_5V_PERIPH_EN, 1);
 
-    /* Initialize serial console on UART4 (PC10/PC11, /dev/ttyS3, 5V) for bootloader debug */
-    sercon_main(0, NULL);
-	
-	modifyreg32(STM32_RCC_CR, 0, RCC_CR_HSEON);  // Enable HSE
+    modifyreg32(STM32_RCC_CR, 0, RCC_CR_HSEON);  // Enable HSE
     while (!(getreg32(STM32_RCC_CR) & RCC_CR_HSERDY));  // Wait ready
-    // Then reconfigure PLL via stm32_clockconfig() if needed
 }
 
 /**
  * @brief Timer hook for system tick handling
- *
- * This function is called by the system tick interrupt to handle timing-related
- * tasks in the bootloader. It ensures proper timing for bootloader operations
- * on the STM32H743VIT6.
  */
 extern void sys_tick_handler(void);
+
 void board_timerhook(void)
 {
     sys_tick_handler();
+}
+
+__EXPORT int main(int argc, char *argv[]);
+
+extern void led_on(unsigned led);
+extern void led_off(unsigned led);
+
+int main(int argc, char *argv[])
+{
+    // Call the actual bootloader with timeout
+    // 0 = infinite timeout (stay in bootloader forever)
+    bootloader(0);
+    
+    return 0;
 }
