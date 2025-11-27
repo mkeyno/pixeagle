@@ -106,10 +106,11 @@ __EXPORT void board_on_reset(int status)
 __EXPORT void stm32_boardinitialize(void)
 {
     board_on_reset(-1);
-
+#ifndef BOOTLOADER
     /* Configure LEDs */
     led_init();
-
+ 
+#endif	
     /* Configure GPIO pins */
     const uint32_t gpio[] = PX4_GPIO_INIT_LIST;
     px4_gpio_init(gpio, arraySize(gpio));
@@ -117,8 +118,10 @@ __EXPORT void stm32_boardinitialize(void)
     /* Configure USB interfaces */
     stm32_usbinitialize();
 
-    /* Initialize SPI buses */
+   #ifndef BOOTLOADER
+ 
     stm32_spiinitialize();
+#endif	
 }
 
 /****************************************************************************
