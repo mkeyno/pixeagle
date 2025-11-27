@@ -19,15 +19,20 @@ ENTRY(__start)
 SECTIONS
 {
     .text : {
-        _stext = .;
-        *(.vector_table)
+        _stext = ABSOLUTE(.);
+        *(.vectors)
         *(.text .text.*)
         *(.fixup)
         *(.gnu.warning)
         *(.rodata .rodata.*)
-        *(.glue_7t) *(.glue_7)
-        . = ALIGN(4);
-        _etext = .;
+        *(.gnu.linkonce.t.*)
+        *(.glue_7)
+        *(.glue_7t)
+        *(.got)
+        *(.gcc_except_table)
+        *(.gnu.linkonce.r.*)
+        _etext = ABSOLUTE(.);
+        _eronly = ABSOLUTE(.);  /* ADD THIS LINE */
     } > FLASH
 
     .data : {
