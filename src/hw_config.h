@@ -59,7 +59,12 @@
 #define BOARD_TYPE                     100          /* Unique ID for Pixeagle, update in .prototype */
 #define _FLASH_KBYTES                  (*(uint32_t *)0x1FF1E880)  /* STM32H743 flash size register */
 #define BOARD_FLASH_SECTORS            16          /* 2MB Flash: 2 banks x 8 sectors (128KB each) */
-#define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)  /* 2048 KB */
+
+
+#ifndef BOARD_FLASH_SIZE
+	#define BOARD_FLASH_SIZE               (_FLASH_KBYTES * 1024)  /* 2048 KB */
+#endif
+
 #define BOARD_FIRST_FLASH_SECTOR_TO_ERASE 2  /* Start erasing after bootloader sector */
 
 #define OSC_FREQ                       16           /* 8 MHz HSE crystal for STM32H743 */
