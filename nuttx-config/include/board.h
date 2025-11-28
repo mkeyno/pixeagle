@@ -25,6 +25,15 @@
 # include <stdint.h>
 #endif
 
+/* Define __EXPORT for both C and C++ */
+#ifndef __EXPORT
+# ifdef __cplusplus
+#  define __EXPORT extern "C"
+# else
+#  define __EXPORT extern
+# endif
+#endif
+
 #include "stm32_rcc.h"
 #include "stm32_sdmmc.h"
 
@@ -49,6 +58,11 @@
 #define STM32_LSI_FREQUENCY     32000
 #define STM32_HSE_FREQUENCY     STM32_BOARD_XTAL
 #define STM32_LSE_FREQUENCY     32768
+
+#define BOARD_NUM_SPI_CFG_HW_VERSIONS 1
+
+#define STM32_HSECLK_FREQUENCY    16000000UL  // Your 16MHz crystal
+#define BOARD_USE_HSE_FOR_USB_CLOCK 1         // Locks USB to HSE for stable 48MHz OTG_FS
 
 /* Main PLL Configuration.
  *
@@ -84,10 +98,10 @@
  */
 
 #define STM32_PLLCFG_PLL1CFG    (RCC_PLLCFGR_PLL1VCOSEL_WIDE | \
-				 RCC_PLLCFGR_PLL1RGE_4_8_MHZ | \
-				 RCC_PLLCFGR_DIVP1EN | \
-				 RCC_PLLCFGR_DIVQ1EN | \
-				 RCC_PLLCFGR_DIVR1EN)
+                 RCC_PLLCFGR_PLL1RGE_4_8_MHZ | \
+                 RCC_PLLCFGR_DIVP1EN | \
+                 RCC_PLLCFGR_DIVQ1EN | \
+                 RCC_PLLCFGR_DIVR1EN)
 #define STM32_PLLCFG_PLL1M       RCC_PLLCKSELR_DIVM1(1)
 #define STM32_PLLCFG_PLL1N       RCC_PLL1DIVR_N1(60)
 #define STM32_PLLCFG_PLL1P       RCC_PLL1DIVR_P1(2)
@@ -102,10 +116,10 @@
 /* PLL2 */
 
 #define STM32_PLLCFG_PLL2CFG     (RCC_PLLCFGR_PLL2VCOSEL_WIDE | \
-				  RCC_PLLCFGR_PLL2RGE_4_8_MHZ | \
-				  RCC_PLLCFGR_DIVP2EN | \
-				  RCC_PLLCFGR_DIVQ2EN | \
-				  RCC_PLLCFGR_DIVR2EN)
+                  RCC_PLLCFGR_PLL2RGE_4_8_MHZ | \
+                  RCC_PLLCFGR_DIVP2EN | \
+                  RCC_PLLCFGR_DIVQ2EN | \
+                  RCC_PLLCFGR_DIVR2EN)
 #define STM32_PLLCFG_PLL2M       RCC_PLLCKSELR_DIVM2(4)
 #define STM32_PLLCFG_PLL2N       RCC_PLL2DIVR_N2(48)
 #define STM32_PLLCFG_PLL2P       RCC_PLL2DIVR_P2(2)
@@ -120,8 +134,8 @@
 /* PLL3 */
 
 #define STM32_PLLCFG_PLL3CFG    (RCC_PLLCFGR_PLL3VCOSEL_WIDE | \
-				 RCC_PLLCFGR_PLL3RGE_4_8_MHZ | \
-				 RCC_PLLCFGR_DIVQ3EN)
+                 RCC_PLLCFGR_PLL3RGE_4_8_MHZ | \
+                 RCC_PLLCFGR_DIVQ3EN)
 #define STM32_PLLCFG_PLL3M      RCC_PLLCKSELR_DIVM3(4)
 #define STM32_PLLCFG_PLL3N      RCC_PLL3DIVR_N3(48)
 #define STM32_PLLCFG_PLL3P      RCC_PLL3DIVR_P3(2)
@@ -267,6 +281,16 @@
 /* SDMMC definitions ********************************************************/
 /* We don't use SDMMC, using SPI instead for MicroSD */
 
+/* Tone Alarm (Buzzer) Configuration */
+#define TONE_ALARM_TIMER              1   /* TIM1 */
+#define TONE_ALARM_CHANNEL            3   /* CH3 on PE13 */
+
+
+/* Tone Alarm (Buzzer) on PE13 (TIM1_CH3) */
+#define GPIO_TONE_ALARM        (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTE|GPIO_PIN13)
+#define GPIO_TONE_ALARM_IDLE   (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_SET|GPIO_PORTE|GPIO_PIN13)  /* Idle high; change to OUTPUT_CLEAR if buzzer active low */
+#define GPIO_BUZZER            GPIO_TONE_ALARM  /* Alias for existing init */
+
 /* LED definitions ******************************************************************/
 /* The Pixeagle board has WS2812B LED on PE14, Safety LED on PE15
  *
@@ -387,10 +411,16 @@
 #define GPIO_I2C4_SDA_GPIO                  (GPIO_OUTPUT | GPIO_OPENDRAIN | GPIO_SPEED_50MHz | GPIO_OUTPUT_SET | GPIO_PORTB | GPIO_PIN9)
 
 /* USB */
-#define GPIO_OTG_FS_DM   GPIO_OTG_FS_DM_0   /* PA11 */
-#define GPIO_OTG_FS_DP   GPIO_OTG_FS_DP_0   /* PA12 */
-#define GPIO_OTG_FS_VBUS (GPIO_INPUT|GPIO_FLOAT|GPIO_SPEED_100MHz|GPIO_OPENDRAIN|GPIO_PORTA|GPIO_PIN9) /* PA9 */
 
+/* USB - Legacy definitions for NuttX compatibility */
+#define GPIO_OTGFS_VBUS (GPIO_INPUT|GPIO_FLOAT|GPIO_SPEED_100MHz|GPIO_OPENDRAIN|GPIO_PORTA|GPIO_PIN9)
+#define GPIO_OTGFS_DM   (GPIO_ALT|GPIO_AF10|GPIO_SPEED_100MHz|GPIO_PUSHPULL|GPIO_PORTA|GPIO_PIN11)
+#define GPIO_OTGFS_DP   (GPIO_ALT|GPIO_AF10|GPIO_SPEED_100MHz|GPIO_PUSHPULL|GPIO_PORTA|GPIO_PIN12)
+
+/* Keep the new style definitions as well for PX4 compatibility */
+#define GPIO_OTG_FS_VBUS GPIO_OTGFS_VBUS
+#define GPIO_OTG_FS_DM   GPIO_OTGFS_DM
+#define GPIO_OTG_FS_DP   GPIO_OTGFS_DP
 /* PWM Output definitions based on your pin mapping */
 
 /* Timer 1 */
@@ -424,13 +454,24 @@
 /* Power control */
 #define GPIO_VDD_5V_PERIPH_EN (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTA|GPIO_PIN15)
 
+
+
+
 /* Safety and indicators */
 #define GPIO_SAFETY_SWITCH_IN (GPIO_INPUT|GPIO_PULLUP|GPIO_PORTE|GPIO_PIN12)
 #define GPIO_SAFETY_LED       (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTE|GPIO_PIN15)
-#define GPIO_BUZZER           (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTE|GPIO_PIN13)
+ 
 
 /* WS2812B LED - controlled by FastLED library */
 #define GPIO_WS2812B_LED      (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_50MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTE|GPIO_PIN14)
+
+/* Hardware Version Detection - Single version board */
+#define BOARD_HAS_HW_VERSIONING
+#define HW_VERSION_MAJOR 1
+#define HW_VERSION_MINOR 0
+#define HW_VERSION_REVISION 0
+
+
 
 /* PPM Input */
 #define GPIO_PPM_IN           (GPIO_ALT|GPIO_AF2|GPIO_PULLUP|GPIO_PORTB|GPIO_PIN1) /* TIM3_CH4 */
@@ -472,16 +513,16 @@
 # define PROBE_8    (GPIO_OUTPUT|GPIO_PUSHPULL|GPIO_SPEED_2MHz|GPIO_OUTPUT_CLEAR|GPIO_PORTA|GPIO_PIN10)  /* PA10 PWM8 */
 
 # define PROBE_INIT(mask) \
-	do { \
-		if ((mask)& PROBE_N(1)) { stm32_configgpio(PROBE_1); } \
-		if ((mask)& PROBE_N(2)) { stm32_configgpio(PROBE_2); } \
-		if ((mask)& PROBE_N(3)) { stm32_configgpio(PROBE_3); } \
-		if ((mask)& PROBE_N(4)) { stm32_configgpio(PROBE_4); } \
-		if ((mask)& PROBE_N(5)) { stm32_configgpio(PROBE_5); } \
-		if ((mask)& PROBE_N(6)) { stm32_configgpio(PROBE_6); } \
-		if ((mask)& PROBE_N(7)) { stm32_configgpio(PROBE_7); } \
-		if ((mask)& PROBE_N(8)) { stm32_configgpio(PROBE_8); } \
-	} while(0)
+    do { \
+        if ((mask)& PROBE_N(1)) { stm32_configgpio(PROBE_1); } \
+        if ((mask)& PROBE_N(2)) { stm32_configgpio(PROBE_2); } \
+        if ((mask)& PROBE_N(3)) { stm32_configgpio(PROBE_3); } \
+        if ((mask)& PROBE_N(4)) { stm32_configgpio(PROBE_4); } \
+        if ((mask)& PROBE_N(5)) { stm32_configgpio(PROBE_5); } \
+        if ((mask)& PROBE_N(6)) { stm32_configgpio(PROBE_6); } \
+        if ((mask)& PROBE_N(7)) { stm32_configgpio(PROBE_7); } \
+        if ((mask)& PROBE_N(8)) { stm32_configgpio(PROBE_8); } \
+    } while(0)
 
 # define PROBE(n,s)  do {stm32_gpiowrite(PROBE_##n,(s));}while(0)
 # define PROBE_MARK(n) PROBE(n,false);PROBE(n,true)
@@ -496,6 +537,8 @@
 #define HRT_TIMER_CHANNEL       3  /* use capture/compare channel 3 */
 
 /* PWM Configuration */
+ 
+
 #define DIRECT_PWM_OUTPUT_CHANNELS  8
 #define DIRECT_INPUT_TIMER_CHANNELS 8
 
@@ -507,47 +550,32 @@
 
 /* The list of GPIO that will be initialized */
 #define PX4_GPIO_PWM_INIT_LIST { \
-		GPIO_TIM1_CH2OUT,    \
-		GPIO_TIM1_CH3OUT,    \
-		GPIO_TIM3_CH1OUT,    \
-		GPIO_TIM3_CH3OUT,    \
-		GPIO_TIM4_CH1OUT,    \
-		GPIO_TIM4_CH2OUT,    \
-		GPIO_TIM4_CH3OUT,    \
-		GPIO_TIM4_CH4OUT,    \
-		GPIO_TIM5_CH1OUT,    \
-		GPIO_TIM5_CH2OUT,    \
-		GPIO_TIM5_CH3OUT,    \
-		GPIO_TIM5_CH4OUT,    \
-		GPIO_TIM8_CH2OUT,    \
-		GPIO_TIM8_CH3OUT,    \
-	}
-
-#define PX4_GPIO_INIT_LIST { \
-		PX4_ADC_GPIO,                     \
-		GPIO_CAN1_TX,                     \
-		GPIO_CAN1_RX,                     \
-		GPIO_CAN2_TX,                     \
-		GPIO_CAN2_RX,                     \
-		GPIO_VDD_5V_PERIPH_EN,            \
-		GPIO_SAFETY_SWITCH_IN,            \
-		GPIO_SAFETY_LED,                  \
-		GPIO_BUZZER,                      \
-		GPIO_WS2812B_LED,                 \
-		GPIO_PPM_IN,                      \
-		GPIO_CM4_STATUS,                  \
-	}
+        GPIO_TIM1_CH2OUT,    \
+        GPIO_TIM1_CH3OUT,    \
+        GPIO_TIM3_CH1OUT,    \
+        GPIO_TIM3_CH3OUT,    \
+        GPIO_TIM4_CH1OUT,    \
+        GPIO_TIM4_CH2OUT,    \
+        GPIO_TIM4_CH3OUT,    \
+        GPIO_TIM4_CH4OUT,    \
+        GPIO_TIM5_CH1OUT,    \
+        GPIO_TIM5_CH2OUT,    \
+        GPIO_TIM5_CH3OUT,    \
+        GPIO_TIM5_CH4OUT,    \
+        GPIO_TIM8_CH2OUT,    \
+        GPIO_TIM8_CH3OUT,    \
+    }
 
 /* Define True logic Power Control in arch agnostic form */
 #define VDD_5V_PERIPH_EN(on_true)          px4_arch_gpiowrite(GPIO_VDD_5V_PERIPH_EN, (on_true))
 #define VDD_5V_HIPOWER_EN(on_true)         VDD_5V_PERIPH_EN(on_true)
 
-/* Define True logic Power Control in arch agnostic form */
+/* Define GPIO pins used as ADC N.B. Channel numbers must match below */
 #define PX4_ADC_GPIO  \
-	/* PA0 */  GPIO_ADC1_IN10, \
-	/* PC1 */  GPIO_ADC1_IN11, \
-	/* PC2 */  GPIO_ADC1_IN12, \
-	/* PC3 */  GPIO_ADC1_IN13
+    /* PC0 */  GPIO_ADC1_IN10, \
+    /* PC1 */  GPIO_ADC1_IN11, \
+    /* PC2 */  GPIO_ADC1_IN12, \
+    /* PC3 */  GPIO_ADC1_IN13
 
 /* Define Battery 1 Voltage Divider and A per V */
 #define BOARD_BATTERY1_V_DIV         (11.0f)     /* measured with the provided PM board */
@@ -555,46 +583,24 @@
 
 /* HW has to large of R termination on cubepilot serial port, hw debug is not possible */
 #define PX4_GPIO_INIT_SUBDRIVER_LIST { \
-		LED_SAFETY_INIT, \
-	}
+        LED_SAFETY_INIT, \
+    }
 
 __EXPORT void stm32_spiinitialize(void);
 
-#define board_spi_reset(ms, bus_mask)
 
-#define PX4_SPI_BUS_SENSORS     1
-#define PX4_SPI_BUS_RAMTRON     2
-#define PX4_SPI_BUS_EXT         3
-#define PX4_SPI_BUS_ICM42688P   4
 
-/* SPI chip selects */
-#define PX4_SPIDEV_BMI088_ACC          PX4_MK_SPI_SEL(PX4_SPI_BUS_SENSORS,0)
-#define PX4_SPIDEV_BMI088_GYR          PX4_MK_SPI_SEL(PX4_SPI_BUS_SENSORS,1)
-#define PX4_SPIDEV_FRAM                PX4_MK_SPI_SEL(PX4_SPI_BUS_RAMTRON,0)
-#define PX4_SPIDEV_MICROSD             PX4_MK_SPI_SEL(PX4_SPI_BUS_RAMTRON,1)
-#define PX4_SPIDEV_EXT0                PX4_MK_SPI_SEL(PX4_SPI_BUS_EXT,0)
-#define PX4_SPIDEV_ICM42688P           PX4_MK_SPI_SEL(PX4_SPI_BUS_ICM42688P,0)
-
-/* I2C busses */
-#define PX4_I2C_BUS_EXT                1
-#define PX4_I2C_BUS_IST8310_BMP388     3
-#define PX4_I2C_BUS_BMP390             4
-
-/* Devices on the onboard buses.
- *
- * Note that these are unshifted addresses.
- */
-#define PX4_I2C_OBDEV_IST8310          0x0e
-#define PX4_I2C_OBDEV_BMP388           0x77
-#define PX4_I2C_OBDEV_BMP390           0x77
+/* Board configuration */
+#define BOARD_TYPE             100
+#define BOARD_FLASH_SECTORS    16
+#define BOARD_FLASH_SIZE       (2 * 1024 * 1024)
+#define BOARD_HAS_NO_RESET     0
+#define BOARD_HAS_NO_BOOTLOADER 0
 
 /* Safety Switch is HW version dependent on having an PX4IO
  * So we init all the pins that could be used.
  */
-#define GPIO_SAFETY_SWITCH_IN        GPIO_SAFETY_SWITCH_IN
-#define GPIO_SAFETY_LED              GPIO_SAFETY_LED
-/* Enable the FMU to control it if there is no px4io fixme:This should be BOARD_SAFETY_LED(__ontrue) */
-#define GPIO_LED_SAFETY GPIO_SAFETY_LED
+
 #define BOARD_SAFETY_LED(on_true)    px4_arch_gpiowrite(GPIO_SAFETY_LED, !(on_true))
 
 /* Power switch controls */
@@ -611,13 +617,6 @@ __EXPORT void stm32_spiinitialize(void);
 #define ADC1_CH(n)                  (n)
 #define ADC1_GPIO(n)                GPIO_ADC1_IN##n
 
-/* Define GPIO pins used as ADC N.B. Channel numbers must match below */
-#define PX4_ADC_GPIO  \
-	/* PC0 */  GPIO_ADC1_IN10, \
-	/* PC1 */  GPIO_ADC1_IN11, \
-	/* PC2 */  GPIO_ADC1_IN12, \
-	/* PC3 */  GPIO_ADC1_IN13
-
 /* Define Channel numbers must match above GPIO pin IN(n)*/
 #define ADC_ANALOG_SENSOR1_CHANNEL                 ADC1_CH(10)
 #define ADC_ANALOG_SENSOR2_CHANNEL                 ADC1_CH(11)
@@ -625,10 +624,10 @@ __EXPORT void stm32_spiinitialize(void);
 #define ADC_BATTERY_CURRENT_CHANNEL                ADC1_CH(13)
 
 #define ADC_CHANNELS \
-	((1 << ADC_ANALOG_SENSOR1_CHANNEL)       | \
-	 (1 << ADC_ANALOG_SENSOR2_CHANNEL)       | \
-	 (1 << ADC_BATTERY_VOLTAGE_CHANNEL)      | \
-	 (1 << ADC_BATTERY_CURRENT_CHANNEL))
+    ((1 << ADC_ANALOG_SENSOR1_CHANNEL)       | \
+     (1 << ADC_ANALOG_SENSOR2_CHANNEL)       | \
+     (1 << ADC_BATTERY_VOLTAGE_CHANNEL)      | \
+     (1 << ADC_BATTERY_CURRENT_CHANNEL))
 
 /* HW Rev and Ver detection */
 #define BOARD_HAS_HW_SPLIT_VERSIONING
@@ -636,19 +635,6 @@ __EXPORT void stm32_spiinitialize(void);
 #define HW_INFO_INIT_PREFIX           "PX4_"
 
 #define HW_INFO_INIT \
-		{HW_INFO_INIT_PREFIX"FMUV6C", "PIXEAGLE", "V1.0"},
+        {HW_INFO_INIT_PREFIX"FMUV6C", "PIXEAGLE", "V1.0"},
 
-enum board_bus_types {
-	BOARD_INVALID_BUS = 0,
-	BOARD_SPI_BUS     = 1,
-	BOARD_I2C_BUS     = 2,
-};
-
-/* Board configuration */
-#define BOARD_TYPE             100
-#define BOARD_FLASH_SECTORS    16
-#define BOARD_FLASH_SIZE       (2 * 1024 * 1024)
-#define BOARD_HAS_NO_RESET     0
-#define BOARD_HAS_NO_BOOTLOADER 0
-
-#endif  /* __NUTTX_CONFIG_PX4_PIXEAGLE_INCLUDE_BOARD_H */
+#endif  
