@@ -80,9 +80,6 @@ CONFIG_MM_SMALL=n
 CONFIG_NET=n
 CONFIG_NETDEV_PHY_IOCTL=n
 
-
-
-
 # NSH Configuration (for PX4 init scripts - full shell support)
 CONFIG_NSH_DISABLE_ECHO=n
 CONFIG_NSH_DISABLE_SOURCE=n
