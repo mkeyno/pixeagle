@@ -185,11 +185,6 @@ __EXPORT int board_app_initialize(uintptr_t arg)
     return OK;
 }
 
-
-
-
-
-
 /************************************************************************************
  * Name: stm32_spibus_initialize
  *
