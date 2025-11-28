@@ -14,6 +14,7 @@
 #include <stdbool.h>
 #include <debug.h>
 #include <nuttx/usb/usbdev.h>
+#include <nuttx/usb/composite.h>
 #include <nuttx/usb/usbdev_trace.h>
 #include <arm_internal.h>
 #include <chip.h>
@@ -29,6 +30,10 @@
 #ifndef GPIO_OTGFS_VBUS
 #define GPIO_OTGFS_VBUS  (GPIO_INPUT | GPIO_FLOAT | GPIO_SPEED_100MHz | GPIO_OPENDRAIN | GPIO_PORTA | GPIO_PIN9)
 #endif
+
+#define BOARD_HAS_OTGFS_VBUS_SENSE 1
+
+
 #ifndef GPIO_OTGFS_DM
 #define GPIO_OTGFS_DM    (GPIO_ALT | GPIO_AF10 | GPIO_SPEED_100MHz | GPIO_PUSHPULL | GPIO_PORTA | GPIO_PIN11)
 #endif
@@ -44,10 +49,17 @@
 __EXPORT void stm32_usbinitialize(void)
 {
 #ifdef CONFIG_STM32H7_OTGFS
+    /* Enable USB OTG FS clock */
+    stm32_rcc_enable_usb_otg_fs();  // Or directly: modify_rcc(RCC->AHB1ENR, 0, RCC_AHB1ENR_OTGHSEN);
+
+    /* Configure pins */
     stm32_configgpio(GPIO_OTGFS_VBUS);
     stm32_configgpio(GPIO_OTGFS_DM);
     stm32_configgpio(GPIO_OTGFS_DP);
 
+    /* Enable VBUS detection (critical for pull-up trigger) */
+    USB_OTG_FS->GCCFG |= OTG_GCCFG_VBDEN;  // Set VBDEN bit
+composite_initialize();
     uinfo("USB OTG FS initialized: VBUS PA9, DM PA11, DP PA12\n");
 #endif
 }
