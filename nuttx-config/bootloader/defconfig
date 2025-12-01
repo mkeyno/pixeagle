@@ -1,90 +1,147 @@
-# Architecture (keep as is)
+# =============================================================================
+# Pixeagle Bootloader defconfig
+# STM32H743VIT6 @ 480 MHz, 16 MHz HSE, 2 MB Flash
+# Bootloader size: 128 KB (0x08000000 → 0x08020000)
+# USB CDC-ACM bootloader (enumerates as "PX4 BL Pixeagle")
+# =============================================================================
+
+# ----------------------------------------------------------------------------- 
+# Architecture & Chip
+# -----------------------------------------------------------------------------
 CONFIG_ARCH="arm"
 CONFIG_ARCH_FAMILY="armv7-m"
 CONFIG_ARCH_CHIP_STM32H7=y
 CONFIG_ARCH_CHIP="stm32h7"
 CONFIG_ARCH_CHIP_STM32H743=y
 CONFIG_ARCH_CHIP_STM32H743VI=y
-CONFIG_ARCH_HAVE_MPU=y
+
+# MPU, Cache, FPU (required for H7)
 CONFIG_ARM_MPU=y
 CONFIG_ARMV7M_L1_CACHE=y
 CONFIG_ARMV7M_DCACHE=y
 CONFIG_ARMV7M_ICACHE=y
 CONFIG_ARMV7M_FPU=y
-CONFIG_CORTEXM7=y
 CONFIG_ARMV7M_FPU_DOUBLE_PRECISION=y
 CONFIG_ARMV7M_STACKCHECK=y
 CONFIG_ARMV7M_ITMS=y
 
-# Board (point to nuttx-config; enable RELPATH for CMake check)
-CONFIG_ARCH_BOARD_PIXEAGLE=y
+# ----------------------------------------------------------------------------- 
+# Board selection (points to your nuttx-config folder)
+# -----------------------------------------------------------------------------
 CONFIG_ARCH_BOARD_CUSTOM=y
 CONFIG_ARCH_BOARD_CUSTOM_DIR="../../../../boards/px4/pixeagle/nuttx-config"
 CONFIG_ARCH_BOARD_CUSTOM_DIR_RELPATH=y
+CONFIG_ARCH_BOARD_PIXEAGLE=y
 CONFIG_ARCH_BOARD="pixeagle"
-CONFIG_BOARD_LOOPSPERMSEC=480000
-CONFIG_STM32H7_GPIO_INLINE_INITIALIZATION=y
 
-
-CONFIG_STM32H7_FLASH_2048KB=y
-CONFIG_NSH_LIBRARY=n
-CONFIG_SYSTEM_CMDS=n
-
-
-CONFIG_STM32H7_FLASH=y
-CONFIG_STM32H7_PROGMEM=y
-CONFIG_ARCH_HAVE_PROGMEM=y
-CONFIG_PROGMEM=y
-CONFIG_MTD=y
-CONFIG_MTD_PROGMEM=y
-
-# Add (mirrors board.h PLL for 480MHz, but cap SYSCLK at 400MHz for bootloader safety if needed; 480MHz is fine):
+# ----------------------------------------------------------------------------- 
+# Clocking (16 MHz HSE → 480 MHz SYSCLK)
+# -----------------------------------------------------------------------------
 CONFIG_STM32H7_BOARD_USEHSE=y
 CONFIG_STM32H7_HSE_FREQUENCY=16000000
 CONFIG_STM32H7_SYSCLK_FREQUENCY=480000000
 CONFIG_STM32H7_HCLK_FREQUENCY=240000000
+CONFIG_BOARD_LOOPSPERMSEC=480000
 
-
-
-# Serial console configuration (UART4 for debug output)
-CONFIG_STM32H7_UART4=y
-CONFIG_UART4_SERIAL_CONSOLE=y
-CONFIG_UART4_BAUD=115200
-
-# Bootloader specific configurations
-CONFIG_BOOTLOADER_SIZE=65536
-CONFIG_BOOT_SERIAL_BAUD=115200
-CONFIG_BOOT_SERIAL_UART="UART4"
-
-# Memory protection (MPU) configuration
-CONFIG_ARCH_HAVE_MPU=y
-CONFIG_ARM_MPU=y
-CONFIG_STM32H7_GPIO_INLINE_INITIALIZATION=y
-
-
-# Flash configuration
+# ----------------------------------------------------------------------------- 
+# Flash configuration (2 MB) - ADDED PROGMEM SUPPORT
+# -----------------------------------------------------------------------------
+CONFIG_STM32H7_FLASH_2048KB=y
 CONFIG_STM32H7_FLASH_PREFETCH=y
 CONFIG_STM32H7_FLASH_ART_ENABLE=y
 CONFIG_STM32H7_FLASH_WAITSTATES=2
 
-# Minimal system configuration for bootloader
+# CRITICAL: Enable flash programming support for bootloader
+CONFIG_STM32H7_FLASH_CONFIG_DEFAULT=y
+CONFIG_STM32H7_PROGMEM=y
+CONFIG_ARCH_HAVE_PROGMEM=y
+
+# ----------------------------------------------------------------------------- 
+# Power Management - REQUIRED FOR BACKUP REGISTERS (FIXED RTC CONFIG)
+# -----------------------------------------------------------------------------
+CONFIG_STM32H7_PWR=y
+CONFIG_STM32H7_RTC=n
+CONFIG_RTC=n
+CONFIG_RTC_HIRES=n
+CONFIG_RTC_DATETIME=n
+
+# ----------------------------------------------------------------------------- 
+# Bootloader size & entry point
+# -----------------------------------------------------------------------------
+CONFIG_BOOTLOADER_SIZE=131072
+CONFIG_BOARD_LATE_INITIALIZE=y
+CONFIG_INIT_ENTRYPOINT="bootloader_main"
+CONFIG_INIT_STACKSIZE=4096
+
+# ----------------------------------------------------------------------------- 
+# USB OTG FS + CDC-ACM (CORRECTED FOR STM32H7)
+# -----------------------------------------------------------------------------
+CONFIG_STM32H7_HSI48=y
+CONFIG_STM32H7_CRS=y
+CONFIG_STM32H7_OTGFS=y
+CONFIG_USBDEV=y
+CONFIG_USBDEV_BUSPOWERED=y
+CONFIG_USBDEV_MAXPOWER=500
+
+CONFIG_CDCACM=y
+CONFIG_CDCACM_RXBUFSIZE=600
+CONFIG_CDCACM_TXBUFSIZE=12000
+CONFIG_CDCACM_VENDORID=0x3185
+CONFIG_CDCACM_PRODUCTID=0x0038
+CONFIG_CDCACM_VENDORSTR="Pixeagle"
+CONFIG_CDCACM_PRODUCTSTR="PX4 BL Pixeagle"
+CONFIG_SYSTEM_CDCACM=y
+
+CONFIG_CDCACM_IFLOWCONTROL=y
+
+# ----------------------------------------------------------------------------- 
+# Board control (reset, poweroff, etc.)
+# -----------------------------------------------------------------------------
+CONFIG_BOARDCTL=y
+CONFIG_BOARDCTL_RESET=y
+CONFIG_BOARDCTL_POWEROFF=y
+CONFIG_BOARDCTL_IOCTL=y
+CONFIG_LIB_BOARDCTL=y
+CONFIG_ARCH_HAVE_POWEROFF=y
+
+# ----------------------------------------------------------------------------- 
+# Minimal serial console (UART4 @ 115200, used for debug output)
+# -----------------------------------------------------------------------------
+CONFIG_STM32H7_UART4=y
+CONFIG_UART4_SERIAL_CONSOLE=y
+CONFIG_UART4_BAUD=115200
+CONFIG_SERIAL_TERMIOS=y
+
+# ----------------------------------------------------------------------------- 
+# Keep everything else as small as possible (bootloader must fit in 128 KB)
+# -----------------------------------------------------------------------------
 CONFIG_DISABLE_OS_API=y
-CONFIG_SCHED_WORKQUEUE=n
 CONFIG_SCHED_HPWORK=n
 CONFIG_SCHED_LPWORK=n
+CONFIG_SCHED_WORKQUEUE=n
 CONFIG_BOOT_BANNER=n
-
-# Disable unnecessary features for bootloader
 CONFIG_FS_PROCFS=n
 CONFIG_MM_SMALL=n
 CONFIG_NET=n
 CONFIG_NETDEV_PHY_IOCTL=n
+CONFIG_DISABLE_ENVIRON=y
 
-# NSH Configuration (for PX4 init scripts - full shell support)
+CONFIG_SYSTEM_NSH=n
 CONFIG_NSH_DISABLE_ECHO=n
+CONFIG_NSH_DISABLE_SET=n
 CONFIG_NSH_DISABLE_SOURCE=n
-CONFIG_NSH_DISABLE_SET=n          # <-- KEY: Enables 'set' command
-CONFIG_NSH_LINELEN=128
-CONFIG_NSH_FILEIOSIZE=1024
-CONFIG_NSH_CMDHIST=n              # Optional: Disable history to save Flash
 
+# Debug symbols (optional)
+CONFIG_DEBUG_FEATURES=y
+CONFIG_DEBUG_SYMBOLS=y
+CONFIG_DEBUG_FULLOPT=y
+
+# Required for sys_tick_handler() hook
+CONFIG_SYSTEMTICK_HOOK=y
+
+# Produce raw .bin for STM32CubeProgrammer
+CONFIG_RAW_BINARY=y
+
+# ----------------------------------------------------------------------------- 
+# End of file
+# -----------------------------------------------------------------------------
