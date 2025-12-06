@@ -1,34 +1,21 @@
 #!/bin/sh
-# rc.board_defaults
 #
-# Default parameters for Pixeagle (STM32H743VIT6, 16MHz HSE).
-# Configures PWM (TIM1/3-5/8), UARTs, RC input, and battery settings.
-# Hardware:
-# - PWM OUT 1-4 (PD12-15, TIM4), OUT 5 (PC6, TIM3), OUT 6 (PC7, TIM8)
-# - PWM OUT 7 (PC8, TIM8_CH3), OUT 8 (PA10, TIM1)
-# - AUX GPIO 1-4 (PA0-3, TIM5), AUX5 (PB0, TIM3), AUX6 (PE11, TIM1)
-# - PPM (PB1, TIM3_CH4), SBUS (PD9, UART3)
-# - Sensor power: PA15 (GPIO_VDD_5V_PERIPH_EN, active high)
-# - Battery: PC2 (voltage, 11:1 divider), PC3 (current)
-# - WS2812B: PE14 (FastLED)
+# board specific defaults
+#------------------------------------------------------------------------------
 
-echo "Setting default parameters for Pixeagle..."
+# Battery voltage divider: 10k + 1k = 11:1 ratio
+param set-default BAT1_V_DIV 11
+param set-default BAT2_V_DIV 11
 
-# PWM output frequencies (400Hz for ESCs)
-param set PWM_MAIN_RATE 400
-param set PWM_MAIN_OUT 12345678  # Enable PWM OUT 1-8
-param set PWM_AUX_OUT 123456     # Enable AUX GPIO 1-6
+# Current sensor calibration (adjust based on your actual current sensor)
+# Default value for common 50A sensors with 100A shunt: 36.367515152
+# For different sensors, you may need to calculate:
+# A_PER_V = Max_Current / (Vref * Gain)
+param set-default BAT1_A_PER_V 36.367515152
+param set-default BAT2_A_PER_V 36.367515152
 
-# UART configurations
-param set UART2_BAUD 57600   # USART2 (/dev/ttyS0, PD3-6, telemetry)
-param set UART3_BAUD 115200  # UART3 (/dev/ttyS1, PD8/9, SBUS/PPM)
-param set UART4_BAUD 115200  # UART4 (/dev/ttyS3, PC10/11, debug)
-param set UART5_BAUD 115200  # UART5 (/dev/ttyS2, PC12/PD2, sensors)
-param set UART7_BAUD 921600  # UART7 (/dev/ttyS4, PE7-10, CM4)
-param set UART8_BAUD 115200  # UART8 (/dev/ttyS5, PE0/1, reserved)
-
-# Enable SBUS/PPM auto-detect
-param set RC_IN_MODE 1  # 1 = PPM/SBUS auto-detect
-
-# Battery voltage divider (11:1 for 5S LiPo)
-param set BAT1_V_DIV 11.0
+# Additional defaults for your board
+param set-default SENS_BOARD_ROT 0
+param set-default SENS_BOARD_X_OFF 0
+param set-default SENS_BOARD_Y_OFF 0
+param set-default SENS_BOARD_Z_OFF 0
