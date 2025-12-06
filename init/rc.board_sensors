@@ -1,23 +1,28 @@
 #!/bin/sh
-# Pixeagle sensor initialization (STM32H743VIT6, 16MHz HSE)
-# Sensors: IST8310 (I2C3, 0x0E), BMI088 (SPI1, PA4 CS_ACC, PB2 CS_GYR, PC4/PC5 interrupts),
-# ICM-42688-P (SPI4, PE4 CS, PE3 DRDY), BMP388 (I2C3, 0x76), BMP390 (I2C4, 0x76)
-# Input: PPM (PB1, TIM3_CH4), SBUS (PD9, UART3, auto-detect)
-# Sensor power: PA15 (GPIO_VDD_5V_PERIPH_EN, active high, enabled in init.c)
-# No PX4IO. MicroSD on SPI2 (PB11 CS).
+#
+# Pixeagle specific board sensors init
+#------------------------------------------------------------------------------
+# board_adc start
 
-echo "Starting sensors for Pixeagle..."
+board_adc start
 
-# Magnetometer (IST8310, I2C3)
-ist8310 start i2c 3 0x0E
+# Internal SPI1 BMI088 accel/gyro
+# ACC CS: PA4, GYR CS: PB2, SPI1 bus
+bmi088 -A -R 0 -s -b 1 start
+bmi088 -G -R 0 -s -b 1 start
 
-# Barometers (BMP388 on I2C3, BMP390 on I2C4)
-bmp388 start i2c 3 0x76
-bmp390 start i2c 4 0x76
+# Internal SPI4 ICM-42688-P
+# CS: PE4, SPI4 bus
+icm42688p -R 0 -s -b 4 start
 
-# IMU (BMI088 accel/gyro on SPI1, ICM-42688-P on SPI4)
-bmi088 start spi 1
-icm42688p start spi 4
+# Internal I2C3 BMP388 (address 0x77)
+bmp388 -I -b 3 -a 0x77 start
 
-# RC input (PPM on PB1, SBUS on PD9)
-rcin start
+# Internal I2C3 IST8310 (address 0x0e)
+ist8310 -I -b 3 -a 0x0e -R 0 start
+
+# Internal I2C4 BMP390 (address 0x77)
+bmp390 -I -b 4 -a 0x77 start
+
+# Optional: External I2C1 for additional sensors
+# ist8310 -X -b 1 -a 0x0e -R 0 start
