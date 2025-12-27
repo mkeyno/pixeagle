@@ -1,0 +1,17 @@
+menuconfig DRIVERS_OLED_OLED_96X16_MODULE
+			bool "OLED_96x16 OLED Display Driver Module"
+					default n
+			---help---
+						Enable support for OLED_96x16 OLED display (96x16 monochrome)
+						as a runtime-loadable driver module.
+						This is separate from the board-integrated debug version
+						(CONFIG_DRIVERS_OLED_OLED_96X16) which can be used for early boot debugging.
+						This module version can be started/stopped at runtime and
+						is useful for displaying status information during normal operation.
+						Hardware: I2C-based OLED display (SSD1306 compatible subset)
+						I2C Address: 0x3C (default)
+						Usage:
+						oled_96x16 start -X -b 1      # Start on external I2C bus 1
+						oled_96x16 status             # Show status
+						oled_96x16 test -t "Hello"    # Display text
+						oled_96x16 stop               # Stop driver
