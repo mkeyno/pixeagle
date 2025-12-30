@@ -1,0 +1,119 @@
+#
+# Pixeagle MINIMAL .px4board
+# Only: UART4 console (NSH), I2C1 + OLED, USB CDC-ACM, basic shell
+#
+
+CONFIG_BOARD_TOOLCHAIN="arm-none-eabi"
+CONFIG_BOARD_ARCHITECTURE="cortex-m7"
+
+# Disable all serial telem/gps ports (we only use UART4 as console via NuttX config)
+# CONFIG_BOARD_SERIAL_GPS1="/dev/ttyS0" is not set
+# CONFIG_BOARD_SERIAL_TEL1="/dev/ttyS1" is not set
+# CONFIG_BOARD_SERIAL_TEL2="/dev/ttyS3" is not set
+# CONFIG_BOARD_SERIAL_TEL4="/dev/ttyS4" is not set
+
+# ────────────────────────────── DRIVERS (all disabled except OLED) ───────
+# CONFIG_DRIVERS_ADC_BOARD_ADC is not set
+# CONFIG_COMMON_BAROMETERS is not set
+# CONFIG_DRIVERS_BATT_SMBUS is not set
+# CONFIG_DRIVERS_CAMERA_CAPTURE is not set
+# CONFIG_DRIVERS_CAMERA_TRIGGER is not set
+# CONFIG_DRIVERS_CDCACM_AUTOSTART is not set       # We start CDCACM manually if needed
+# CONFIG_COMMON_DIFFERENTIAL_PRESSURE is not set
+# CONFIG_COMMON_DISTANCE_SENSOR is not set
+# CONFIG_DRIVERS_DSHOT is not set
+# CONFIG_DRIVERS_GPS is not set
+# CONFIG_DRIVERS_IMU_BOSCH_BMI088 is not set
+# CONFIG_DRIVERS_IMU_INVENSENSE_ICM42688P is not set
+# CONFIG_COMMON_LIGHT is not set
+# CONFIG_DRIVERS_MAGNETOMETER_ISENTEK_IST8310 is not set
+# CONFIG_COMMON_OPTICAL_FLOW is not set
+# CONFIG_DRIVERS_POWER_MONITOR_INA226 is not set
+# CONFIG_DRIVERS_PWM_OUT is not set
+# CONFIG_DRIVERS_PX4IO is not set
+# CONFIG_DRIVERS_SMART_BATTERY_BATMON is not set
+# CONFIG_COMMON_TELEMETRY is not set
+# CONFIG_DRIVERS_TONE_ALARM is not set
+# CONFIG_DRIVERS_UAVCAN is not set
+
+CONFIG_DRIVERS_OLED_OLED_96X16=y                 # Keep OLED for debugging
+
+# ────────────────────────────── MODULES (all disabled) ───────────────────
+# CONFIG_MODULES_AIRSPEED_SELECTOR is not set
+# CONFIG_MODULES_BATTERY_STATUS is not set
+# CONFIG_MODULES_CAMERA_FEEDBACK is not set
+# CONFIG_MODULES_COMMANDER is not set
+# CONFIG_MODULES_CONTROL_ALLOCATOR is not set
+# CONFIG_MODULES_DATAMAN is not set
+# CONFIG_MODULES_EKF2 is not set
+# CONFIG_MODULES_ESC_BATTERY is not set
+# CONFIG_MODULES_EVENTS is not set
+# CONFIG_MODULES_FLIGHT_MODE_MANAGER is not set
+# CONFIG_MODULES_FW_ATT_CONTROL is not set
+# CONFIG_MODULES_FW_AUTOTUNE_ATTITUDE_CONTROL is not set
+# CONFIG_MODULES_FW_MODE_MANAGER is not set
+# CONFIG_MODULES_FW_LATERAL_LONGITUDINAL_CONTROL is not set
+# CONFIG_MODULES_FW_RATE_CONTROL is not set
+# CONFIG_MODULES_GIMBAL is not set
+# CONFIG_MODULES_GYRO_CALIBRATION is not set
+# CONFIG_MODULES_LAND_DETECTOR is not set
+# CONFIG_MODULES_LANDING_TARGET_ESTIMATOR is not set
+# CONFIG_MODULES_LOAD_MON is not set
+# CONFIG_MODULES_LOGGER is not set
+# CONFIG_MODULES_MAG_BIAS_ESTIMATOR is not set
+# CONFIG_MODULES_MANUAL_CONTROL is not set
+# CONFIG_MODULES_MAVLINK is not set
+# CONFIG_MODULES_MC_ATT_CONTROL is not set
+# CONFIG_MODULES_MC_AUTOTUNE_ATTITUDE_CONTROL is not set
+# CONFIG_MODULES_MC_HOVER_THRUST_ESTIMATOR is not set
+# CONFIG_MODULES_MC_POS_CONTROL is not set
+# CONFIG_MODULES_MC_RATE_CONTROL is not set
+# CONFIG_MODULES_NAVIGATOR is not set
+# CONFIG_MODULES_RC_UPDATE is not set
+# CONFIG_MODULES_SENSORS is not set
+# CONFIG_MODULES_SIMULATION_SIMULATOR_SIH is not set
+# CONFIG_MODULES_TEMPERATURE_COMPENSATION is not set
+# CONFIG_MODULES_UXRCE_DDS_CLIENT is not set
+# CONFIG_MODULES_VTOL_ATT_CONTROL is not set
+
+CONFIG_MODULES_DATAMAN=y 
+
+# ────────────────────────────── SYSTEM COMMANDS (minimal set) ────────────
+CONFIG_SYSTEMCMDS_DMESG=y          # Useful for kernel messages
+CONFIG_SYSTEMCMDS_PARAM=y          # Required for param command in NSH
+CONFIG_SYSTEMCMDS_REBOOT=y         # reboot command
+# CONFIG_SYSTEMCMDS_TOP is not set            # task monitoring
+CONFIG_SYSTEMCMDS_VER=y            # version info
+CONFIG_SYSTEMCMDS_HARDFAULT_LOG=y  # crash debugging
+CONFIG_SYSTEMCMDS_I2CDETECT=y      # optional: helps verify I2C1/OLED
+
+# Disable everything else
+# CONFIG_SYSTEMCMDS_ACTUATOR_TEST is not set
+# CONFIG_SYSTEMCMDS_BSONDUMP is not set
+# CONFIG_SYSTEMCMDS_GPIO is not set
+# CONFIG_SYSTEMCMDS_LED_CONTROL is not set
+# CONFIG_SYSTEMCMDS_MFT is not set
+# CONFIG_SYSTEMCMDS_MTD is not set
+# CONFIG_SYSTEMCMDS_NSHTERM is not set
+# CONFIG_SYSTEMCMDS_PERF is not set
+# CONFIG_SYSTEMCMDS_SD_BENCH is not set
+# CONFIG_SYSTEMCMDS_SD_STRESS is not set
+# CONFIG_SYSTEMCMDS_SYSTEM_TIME is not set
+# CONFIG_SYSTEMCMDS_TOPIC_LISTENER is not set
+# CONFIG_SYSTEMCMDS_TUNE_CONTROL is not set
+# CONFIG_SYSTEMCMDS_UORB is not set
+# CONFIG_SYSTEMCMDS_USB_CONNECTED is not set
+
+CONFIG_SYSTEMCMDS_WORK_QUEUE=y
+# ────────────────────────────── Critical overrides for NSH ───────────────
+CONFIG_DEFAULT_SMALL=n              # Prevents auto-disabling NSH features
+CONFIG_NSH_DISABLE_ECHO=n           # Ensures full shell with echo (required for init scripts)
+
+# ────────────────────────────── NSH itself ───────────────────────────────
+CONFIG_SYSTEM_NSH=y
+CONFIG_NSH_ARCHINIT=y
+CONFIG_NSH_ROMFSETC=y
+
+# CONFIG_PX4_WORK_QUEUE_MANAGER is not set
+
+ 
