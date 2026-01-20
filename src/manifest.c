@@ -2,7 +2,8 @@
  * boards/px4/pixeagle/src/manifest.c
  *
  * Pixeagle hardware manifest - defines onboard components
- *
+ * defines the onboard sensor/peripheral list (ICM-42688-P, BMI088, baros, mag) — 
+ * it's queried later by the sensor modules and px4_platform_configure().
  ****************************************************************************/
 
 #include <nuttx/config.h>
