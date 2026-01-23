@@ -1,0 +1,53 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+     {
+            "name": "PX4 Hardware Debug (Auto-Launch)",
+            "type": "cortex-debug",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "executable": "${workspaceFolder}/build/px4_pixeagle_default/px4_pixeagle_default.elf",
+            "servertype": "openocd",        "gdbPath": "/usr/bin/gdb-multiarch",
+        "objdumpPath": "/usr/bin/arm-none-eabi-objdump",
+        "nmPath": "/usr/bin/arm-none-eabi-nm",
+
+        "serverpath": "/usr/local/bin/openocd",
+        "device": "STM32H743",
+        "configFiles": [
+            "interface/stlink-v2.cfg",
+            "target/stm32h7x.cfg"
+        ],
+        "searchDir": [
+            "/usr/local/share/openocd/scripts"
+        ],
+        "openocdLaunchCommands": [
+            "init",
+            "reset halt"
+        ],
+        // FIX 1: Increase timeout for large PX4 binary
+        "overrideGDBServerResart": true,
+        "debuggerArgs": [
+            "-ex", "set remotetimeout 60"
+        ],
+
+        "postStartCommands": [
+            "load",
+            "monitor reset halt"
+        ],
+        "breakpoints": {
+            "functions": [
+                "px4_platform_init",
+                "px4::WorkQueueManagerStart",
+                "px4_task_spawn_cmd"
+            ]
+        },
+        // FIX 2: Stop breaking on the ambiguous "main"
+        // Set this to false. The MCU will halt at the first instruction (Reset_Handler) anyway.
+        "runToEntryPoint": "nx_start",  // change it from "main",beacuse actual NuttX OS entry point is nx_start
+
+        "showDevDebugOutput": "both",
+        "svdFile": "/home/mehrdad/PX4/PX4-Autopilot/Tools/svd/stm32h7.svd"
+    }
+
+    ]
+}
