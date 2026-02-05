@@ -43,7 +43,7 @@
         },
         // FIX 2: Stop breaking on the ambiguous "main"
         // Set this to false. The MCU will halt at the first instruction (Reset_Handler) anyway.
-        "runToEntryPoint": "nx_start",  // change it from "main",beacuse actual NuttX OS entry point is nx_start
+        "runToEntryPoint": "sched_unlock",  // change it from "nx_start",beacuse actual NuttX OS entry point is nx_start
 
         "showDevDebugOutput": "both",
         "svdFile": "/home/mehrdad/PX4/PX4-Autopilot/Tools/svd/stm32h7.svd"
