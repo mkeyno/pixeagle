@@ -1,9 +1,28 @@
 /****************************************************************************
  * boards/px4/pixeagle/src/manifest.c
  *
- * Pixeagle hardware manifest - defines onboard components
- * defines the onboard sensor/peripheral list (ICM-42688-P, BMI088, baros, mag) — 
- * it's queried later by the sensor modules and px4_platform_configure().
+ * Pixeagle sensor hardware manifest
+ *
+ * Hardware revision encoding:
+ *   board_get_hw_version()  returns 1  → stored in bits [31:16]
+ *   board_get_hw_revision() returns 2  → stored in bits [15:0]
+ *   ver_rev = (1 << 16) | 2 = 0x00010002
+ *
+ *   VER00 in board_config.h must be defined as:
+ *     #define VER00  HW_VER_REV(1,2)
+ *   or equivalently:
+ *     #define VER00  0x00010002u
+ *
+ * Sensor manifest (indexed by px4_hw_mft_item_id_t):
+ *   [0]  IMU 0   — ICM-42688-P  on SPI4
+ *   [1]  IMU 1   — BMI088 Accel on SPI1
+ *   [2]  IMU 2   — BMI088 Gyro  on SPI1
+ *   [3]  BARO 0  — BMP388       on I2C3
+ *   [4]  BARO 1  — BMP390       on I2C4
+ *   [5]  MAG  0  — IST8310      on I2C3
+ *
+ * Reference:
+ *   boards/px4/fmu-v5x/src/manifest.c  (same pattern, different sensor set)
  ****************************************************************************/
 
 #include <nuttx/config.h>
@@ -16,113 +35,154 @@
 #include "systemlib/px4_macros.h"
 
 /****************************************************************************
- * Pre-Processor Definitions
+ * Private type definitions (mirrors fmu-v5x pattern)
  ****************************************************************************/
 
 typedef struct {
-	uint32_t                hw_ver_rev; /* the version and revision */
-	const px4_hw_mft_item_t *mft;       /* The first entry */
-	uint32_t                entries;    /* the length of the list */
+    uint32_t                 hw_ver_rev;
+    const px4_hw_mft_item_t *mft;
+    uint32_t                 entries;
 } px4_hw_mft_list_entry_t;
 
 typedef px4_hw_mft_list_entry_t *px4_hw_mft_list_entry;
-#define px4_hw_mft_list_uninitialized (px4_hw_mft_list_entry) -1
 
-static const px4_hw_mft_item_t device_unsupported = {0, 0, 0};
+#define px4_hw_mft_list_uninitialized ((px4_hw_mft_list_entry)-1)
 
 /****************************************************************************
- * Pixeagle Hardware Manifest
- * 
- * Lists all onboard sensors and peripherals
+ * Fallback — returned for any device ID that is not in the manifest
  ****************************************************************************/
 
-// List of components on the Pixeagle board configuration
-// The index of those components is given by the enum (px4_hw_mft_item_id_t)
-// declared in board_common.h
+static const px4_hw_mft_item_t device_unsupported = {
+    .present    = 0,
+    .mandatory  = 0,
+    .connection = 0,
+};
+
+/****************************************************************************
+ * Pixeagle sensor manifest  (hardware revision VER00 = 0x00010002)
+ *
+ * IMPORTANT: The order of entries defines the device index (id) passed by
+ * px4_platform_configure() when it calls board_query_manifest(id).
+ * Do NOT reorder entries without updating all driver start scripts.
+ ****************************************************************************/
 
 static const px4_hw_mft_item_t hw_mft_list_pixeagle[] = {
-	{                                      // IMU 0: ICM-42688-P on SPI4
-		.present     = 1,
-		.mandatory   = 1,
-		.connection  = px4_hw_con_onboard,
-	},
-	{                                      // IMU 1: BMI088 Accel on SPI1
-		.present     = 1,
-		.mandatory   = 1,
-		.connection  = px4_hw_con_onboard,
-	},
-	{                                      // IMU 2: BMI088 Gyro on SPI1
-		.present     = 1,
-		.mandatory   = 1,
-		.connection  = px4_hw_con_onboard,
-	},
-	{                                      // Barometer 0: BMP388 on I2C3
-		.present     = 1,
-		.mandatory   = 1,
-		.connection  = px4_hw_con_onboard,
-	},
-	{                                      // Barometer 1: BMP390 on I2C4
-		.present     = 1,
-		.mandatory   = 1,
-		.connection  = px4_hw_con_onboard,
-	},
-	{                                      // Magnetometer 0: IST8310 on I2C3
-		.present     = 1,
-		.mandatory   = 1,
-		.connection  = px4_hw_con_onboard,
-	},
+
+    [0] = { /* IMU 0: ICM-42688-P on SPI4, CS=PE4, DRDY=PE3 */
+        .present    = 1,
+        .mandatory  = 1,
+        .connection = px4_hw_con_onboard,
+    },
+
+    [1] = { /* IMU 1: BMI088 Accelerometer on SPI1, CS=PA4, DRDY=PC4 */
+        .present    = 1,
+        .mandatory  = 1,
+        .connection = px4_hw_con_onboard,
+    },
+
+    [2] = { /* IMU 2: BMI088 Gyroscope on SPI1, CS=PB2, DRDY=PC5 */
+        .present    = 1,
+        .mandatory  = 1,
+        .connection = px4_hw_con_onboard,
+    },
+
+    [3] = { /* BARO 0: BMP388 on I2C3 */
+        .present    = 1,
+        .mandatory  = 1,
+        .connection = px4_hw_con_onboard,
+    },
+
+    [4] = { /* BARO 1: BMP390 on I2C4 */
+        .present    = 1,
+        .mandatory  = 1,
+        .connection = px4_hw_con_onboard,
+    },
+
+    [5] = { /* MAG 0: IST8310 on I2C3 */
+        .present    = 1,
+        .mandatory  = 1,
+        .connection = px4_hw_con_onboard,
+    },
 };
 
-static px4_hw_mft_list_entry_t mft_lists[] = {
-//  ver_rev                  manifest                        entries
-	{VER00, hw_mft_list_pixeagle, arraySize(hw_mft_list_pixeagle)},
+/****************************************************************************
+ * Version → manifest mapping table
+ *
+ * Add additional entries here if you create new board revisions.
+ * VER00 must equal (board_get_hw_version() << 16) | board_get_hw_revision()
+ * = (1 << 16) | 2 = 0x00010002
+ ****************************************************************************/
+
+static px4_hw_mft_list_entry_t hw_mft_lists[] = {
+    {
+        .hw_ver_rev = VER00,
+        .mft        = hw_mft_list_pixeagle,
+        .entries    = arraySize(hw_mft_list_pixeagle),
+    },
 };
 
-/************************************************************************************
- * Name: board_query_manifest
+/****************************************************************************
+ * board_query_manifest()
  *
- * Description:
- *   Optional returns manifest item.
+ * Called by px4_platform_configure() to check whether a sensor at a given
+ * manifest index is present and mandatory on this hardware revision.
  *
- * Input Parameters:
- *   manifest_id - the ID for the manifest item to retrieve
- *
- * Returned Value:
- *   0 - item is not in manifest => assume legacy operations
- *   pointer to a manifest item
- *
- ************************************************************************************/
+ * The function caches the matched manifest table on first call.
+ ****************************************************************************/
 
-// Undefine the macro version to allow our function implementation
+/* Suppress the default macro before declaring the exported function */
 #undef board_query_manifest
 
 __EXPORT px4_hw_mft_item board_query_manifest(px4_hw_mft_item_id_t id)
 {
-	static px4_hw_mft_list_entry boards_manifest = px4_hw_mft_list_uninitialized;
+    static px4_hw_mft_list_entry boards_manifest = px4_hw_mft_list_uninitialized;
 
-	if (boards_manifest == px4_hw_mft_list_uninitialized) {
-		uint32_t ver_rev = ((uint32_t)board_get_hw_version() & 0xFFFF) << 16;
-		ver_rev |= ((uint32_t)board_get_hw_revision() & 0xFFFF);
+    /* --- First-call initialisation: match board revision to manifest --- */
+    if (boards_manifest == px4_hw_mft_list_uninitialized) {
 
-		for (unsigned i = 0; i < arraySize(mft_lists); i++) {
-			if (mft_lists[i].hw_ver_rev == ver_rev) {
-				boards_manifest = &mft_lists[i];
-				syslog(LOG_INFO, "[boot] Pixeagle hardware manifest loaded (ver_rev: %08" PRIx32 ")\n", ver_rev);
-				break;
-			}
-		}
+        uint32_t ver_rev = ((uint32_t)board_get_hw_version()  & 0xFFFFu) << 16u
+                         | ((uint32_t)board_get_hw_revision() & 0xFFFFu);
 
-		if (boards_manifest == px4_hw_mft_list_uninitialized) {
-			syslog(LOG_ERR, "[boot] Pixeagle board %08" PRIx32 " is not supported!\n", ver_rev);
-		}
-	}
+        syslog(LOG_INFO, "[MANIFEST] HW ver_rev=0x%08" PRIx32 " — searching manifest table\n",
+               ver_rev);
 
-	px4_hw_mft_item rv = &device_unsupported;
+        /* Safety: if hardware detection is broken, fall back to VER00 */
+        if (ver_rev == 0xFFFFFFFFu) {
+            syslog(LOG_WARNING, "[MANIFEST] HW detection failed — forcing VER00\n");
+            ver_rev = VER00;
+        }
 
-	if (boards_manifest != px4_hw_mft_list_uninitialized &&
-	    id < boards_manifest->entries) {
-		rv = &boards_manifest->mft[id];
-	}
+        boards_manifest = NULL; /* not found yet */
 
-	return rv;
+        for (unsigned i = 0; i < arraySize(hw_mft_lists); i++) {
+            if (hw_mft_lists[i].hw_ver_rev == ver_rev) {
+                boards_manifest = &hw_mft_lists[i];
+                syslog(LOG_INFO,
+                       "[MANIFEST] Loaded manifest for ver_rev=0x%08" PRIx32
+                       " (%lu sensors)\n",
+                       ver_rev, boards_manifest->entries);
+                break;
+            }
+        }
+
+        if (boards_manifest == NULL) {
+            syslog(LOG_ERR,
+                   "[MANIFEST] No manifest match for ver_rev=0x%08" PRIx32
+                   " — all sensors unsupported!\n", ver_rev);
+            /* Leave boards_manifest = NULL so queries return device_unsupported */
+        }
+    }
+
+    /* --- Return the item for the requested device id --- */
+    if (boards_manifest != NULL && id < boards_manifest->entries) {
+        const px4_hw_mft_item_t *item = &boards_manifest->mft[id];
+        syslog(LOG_INFO,
+               "[MANIFEST] id=%u  present=%d  mandatory=%d\n",
+               id, item->present, item->mandatory);
+        return item;
+    }
+
+    /* Device not in manifest — return unsupported stub */
+    syslog(LOG_WARNING, "[MANIFEST] id=%u not in manifest — returning unsupported\n", id);
+    return &device_unsupported;
 }
